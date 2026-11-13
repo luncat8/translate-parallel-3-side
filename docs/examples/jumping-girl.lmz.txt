@@ -1,0 +1,283 @@
+#!linguamap 1
+# Untimed example of the 0.3.0 bundle format, exported from
+# songs/jumping-girl/map/song-data.js. '#' comments are ignored anywhere.
+#
+# One block per lyric line: the unindented line is the source (byte-exact),
+# each TAB-indented line is one column in @columns order. Blank lines are
+# cosmetic. Colour = @pos / @posDark keyed by the unit's POS.
+#
+@title        Jumping girl
+@source       jp
+@translit     tr
+@columns      jp,tr,ru,en
+@columnTitles ru=Русский,en=English,jp=日本語,tr=Romaji
+@pos          n=#1a5fc4,npr=#3240a8,v=#c22b35,adj=#1e7c34,adjna=#647c11,adv=#7c2cae,pron=#0a7a80,conj=#bc5a10,interj=#b13272,part=#77705f,q=#93700a
+@posDark      n=#7fb2f0,npr=#94a2f0,v=#f28b8b,adj=#82d18d,adjna=#c6d46e,adv=#cb9ee0,pron=#6fcbcd,conj=#f0a763,interj=#f099c4,part=#aab2bc,q=#e6c35f
+@timeFormat   none
+@offset       0
+@credit       LinguaMap example bundle. Untimed: @timeFormat none.
+
+夕暮れ　空を見上げ
+	yuugure sora o miage
+	В сумерках смотрим вверх на небо —
+	At dusk, gazing up at the sky —
+
+みんなで手を伸ばしてみよう
+	minna de te o nobashite miyou
+	Все вместе попробуем вытянуть руки —
+	All together, let's try reaching our hands out —
+
+未来　つかまえたい
+	mirai tsukamaetai
+	Так хочется схватить будущее —
+	I want to seize the future —
+
+思いと一緒に　今から――
+	omoi to issho ni ima kara――
+	вместе с нашими чувствами, с этих самых пор――
+	together with our feelings, from this very moment――
+
+「飛ぶよー！」
+	"Tobu yoo!"
+	«Полетели-и!»
+	“We'll fly—!”
+
+Jumpin' girls！(Jumpin' girls！)
+	Jumpin' girls! (Jumpin' girls!)
+	Jumpin' girls! (Jumpin' girls!)
+	Jumpin' girls! (Jumpin' girls!)
+
+Jumpin' high！(Jumpin' high！)
+	Jumpin' high! (Jumpin' high!)
+	Jumpin' high! (Jumpin' high!)
+	Jumpin' high! (Jumpin' high!)
+
+Jumpin' sky！(Jumpin' sky！)
+	Jumpin' sky! (Jumpin' sky!)
+	Jumpin' sky! (Jumpin' sky!)
+	Jumpin' sky! (Jumpin' sky!)
+
+明日へ(夢見てる Jump up！)
+	ashita e (yumemiteru Jump up!)
+	В завтрашний день (мечтая, Jump up!)
+	To tomorrow (dreaming, Jump up!)
+
+(わくわくで Step up！)
+	(wakuwaku de Step up!)
+	(в радостном волнении — Step up!)
+	(all excited — Step up!)
+
+今日も強くなれた
+	kyou mo tsuyoku nareta
+	И сегодня я стала сильнее.
+	Today, too, I've grown stronger.
+
+みんなの笑顔をみつけて
+	minna no egao o mitsukete
+	Я отыскала улыбки у всех —
+	I've found everyone's smiles
+
+(ニコニコで Smile up！)
+	(nikoniko de Smile up!)
+	(сияя улыбками — Smile up!)
+	(beaming — Smile up!)
+
+信じてもいいかな？
+	shinjite mo ii kana?
+	Можно ли верить
+	Is it okay to believe
+
+「永遠」とか「可能性」とか
+	"eien" toka "kanousei" toka
+	в такие вещи, как «вечность» или «возможность»?
+	in things like “eternity” or “possibility”?
+
+(ふたつとも Mash up！)
+	(futatsu tomo Mash up!)
+	(и с той и с другой — Mash up!)
+	(with both of them — Mash up!)
+
+Flyin' girls！(Flyin' girls！)
+	Flyin' girls! (Flyin' girls!)
+	Flyin' girls! (Flyin' girls!)
+	Flyin' girls! (Flyin' girls!)
+
+Flyin' mode！(Flyin' mode！)
+	Flyin' mode! (Flyin' mode!)
+	Flyin' mode! (Flyin' mode!)
+	Flyin' mode! (Flyin' mode!)
+
+Flyin' time！(Flyin' time！)
+	Flyin' time! (Flyin' time!)
+	Flyin' time! (Flyin' time!)
+	Flyin' time! (Flyin' time!)
+
+はやる気持ちを
+	hayaru kimochi o
+	Это чувство, что рвётся вперёд,
+	This feeling racing ahead —
+
+抑えきれそうにない
+	osaekiresou ni nai
+	его никак не удержать.
+	I just can't seem to hold back.
+
+未来へ　誰よりも早く
+	mirai e dare yori mo hayaku
+	к будущему, быстрее, чем кто угодно —
+	to the future, faster than anyone else —
+
+フライング気味に！
+	furaingu-gimi ni!
+	будто уже в полёте!
+	already halfway airborne!
+
+もしも未来映す
+	moshimo mirai utsusu
+	Если бы будущее могло отразиться
+	If the future could be reflected
+
+望遠鏡　手に入れたら
+	bouenkyou te ni iretara
+	в телескопе, который удалось бы заполучить —
+	in a telescope, I could get my hands on —
+
+(ドキドキで Look up！)
+	(dokidoki de Look up!)
+	(сердце колотится — Look up!)
+	(hearts pounding — Look up!)
+
+そっと覗いてみよう
+	sotto nozoite miyou
+	Тихонько заглянем туда —
+	Let's gently peek inside —
+
+そこには「希望」しかないよね？
+	soko ni wa "kibou" shika nai yo ne?
+	Там нет ничего, кроме «надежды», ведь правда?
+	There's nothing inside but “hope”, right?
+
+(ふみだそう Start up！)
+	(fumidasou Start up!)
+	(шагнём вперёд — Start up!)
+	(let's step out — Start up!)
+
+Jumpin' girls！(Jumpin' girls！)
+	Jumpin' girls! (Jumpin' girls!)
+	Jumpin' girls! (Jumpin' girls!)
+	Jumpin' girls! (Jumpin' girls!)
+
+Jumpin' high！(Jumpin' high！)
+	Jumpin' high! (Jumpin' high!)
+	Jumpin' high! (Jumpin' high!)
+	Jumpin' high! (Jumpin' high!)
+
+Jumpin' sky！(Jumpin' sky！)
+	Jumpin' sky! (Jumpin' sky!)
+	Jumpin' sky! (Jumpin' sky!)
+	Jumpin' sky! (Jumpin' sky!)
+
+ベリーロールで
+	berii rouru de
+	Сделав бочку,
+	With a belly roll,
+
+一緒に飛び越えよう
+	issho ni tobikoeyou
+	все вместе перепрыгнем!
+	all together, let's leap over it!
+
+何が起きても大丈夫
+	nani ga okite mo daijoubu
+	Что бы ни случилось — всё будет хорошо.
+	No matter what happens, we'll be alright.
+
+Go ahead！　そうでしょ？
+	Go ahead! sou desho?
+	Go ahead! Ведь так?
+	Go ahead! Isn't that right?
+
+夜が落ちる前に
+	yoru ga ochiru mae ni
+	Прежде чем ночь опустится,
+	Before the night falls,
+
+もう一度　高く飛んでみる
+	mou ichido takaku tonde miru
+	Ещё раз попробую взлететь повыше —
+	Once more, I'll try flying high —
+
+きらり　いちばん星
+	kirari ichiban-boshi
+	Первая звезда ярко блеснула —
+	The very first star sparkles —
+
+今すぐ　つかまえに行こうよ！
+	ima sugu tsukamae ni ikou yo!
+	Прямо сейчас летим ловить её!
+	This instant — let's dash out to catch it!
+
+Flyin' girls！(Flyin' girls！)
+	Flyin' girls! (Flyin' girls!)
+	Flyin' girls! (Flyin' girls!)
+	Flyin' girls! (Flyin' girls!)
+
+Flyin' mode！(Flyin' mode！)
+	Flyin' mode! (Flyin' mode!)
+	Flyin' mode! (Flyin' mode!)
+	Flyin' mode! (Flyin' mode!)
+
+Flyin' time！(Flyin' time！)
+	Flyin' time! (Flyin' time!)
+	Flyin' time! (Flyin' time!)
+	Flyin' time! (Flyin' time!)
+
+はやる気持ちを
+	hayaru kimochi o
+	Это чувство, что рвётся вперёд,
+	This feeling racing ahead —
+
+抑えきれそうにない
+	osaekiresou ni nai
+	его никак не удержать.
+	I just can't seem to hold back.
+
+未来へ　フライング気味に
+	mirai e furaingu-gimi ni
+	к будущему, будто уже в полёте.
+	to the future, already halfway airborne.
+
+Jumpin' girls！(Jumpin' girls！)
+	Jumpin' girls! (Jumpin' girls!)
+	Jumpin' girls! (Jumpin' girls!)
+	Jumpin' girls! (Jumpin' girls!)
+
+Jumpin' jump！(Jumpin' jump！)
+	Jumpin' jump! (Jumpin' jump!)
+	Jumpin' jump! (Jumpin' jump!)
+	Jumpin' jump! (Jumpin' jump!)
+
+Jumpin' jump！(Jumpin' jump！)
+	Jumpin' jump! (Jumpin' jump!)
+	Jumpin' jump! (Jumpin' jump!)
+	Jumpin' jump! (Jumpin' jump!)
+
+ベリーロールで
+	berii rouru de
+	Сделав бочку,
+	With a belly roll,
+
+一緒に飛び越えよう
+	issho ni tobikoeyou
+	все вместе перепрыгнем!
+	all together, let's leap over it!
+
+何が起きても大丈夫
+	nani ga okite mo daijoubu
+	Что бы ни случилось — всё будет хорошо.
+	No matter what happens, we'll be alright.
+
+Go ahead！　そうでしょ？
+	Go ahead! sou desho?
+	Go ahead! Ведь так?
+	Go ahead! Isn't that right?

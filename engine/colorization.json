@@ -1,0 +1,97 @@
+{
+	"schema": "linguamap-colorization",
+	"version": 1,
+	"note": "Single source of truth for word-map colours. Colour encodes the part of speech of the source-language head; the same code means the same hue in every language, in both themes. Consumers copy this table verbatim (fork: src/colorization.h) or read it from a '@pos' header. Nobody invents colours.",
+	"codes": [
+		{
+			"code": "n",
+			"label": "noun"
+		},
+		{
+			"code": "npr",
+			"label": "proper noun"
+		},
+		{
+			"code": "v",
+			"label": "verb"
+		},
+		{
+			"code": "adj",
+			"label": "i-adj"
+		},
+		{
+			"code": "adjna",
+			"label": "na-adj"
+		},
+		{
+			"code": "adv",
+			"label": "adverb"
+		},
+		{
+			"code": "pron",
+			"label": "pronoun"
+		},
+		{
+			"code": "conj",
+			"label": "conjunction"
+		},
+		{
+			"code": "interj",
+			"label": "interjection"
+		},
+		{
+			"code": "part",
+			"label": "particle"
+		},
+		{
+			"code": "q",
+			"label": "question word"
+		}
+	],
+	"colors": {
+		"n": {
+			"light": "#1a5fc4",
+			"dark": "#7fb2f0"
+		},
+		"npr": {
+			"light": "#3240a8",
+			"dark": "#94a2f0"
+		},
+		"v": {
+			"light": "#c22b35",
+			"dark": "#f28b8b"
+		},
+		"adj": {
+			"light": "#1e7c34",
+			"dark": "#82d18d"
+		},
+		"adjna": {
+			"light": "#647c11",
+			"dark": "#c6d46e"
+		},
+		"adv": {
+			"light": "#7c2cae",
+			"dark": "#cb9ee0"
+		},
+		"pron": {
+			"light": "#0a7a80",
+			"dark": "#6fcbcd"
+		},
+		"conj": {
+			"light": "#bc5a10",
+			"dark": "#f0a763"
+		},
+		"interj": {
+			"light": "#b13272",
+			"dark": "#f099c4"
+		},
+		"part": {
+			"light": "#77705f",
+			"dark": "#aab2bc"
+		},
+		"q": {
+			"light": "#93700a",
+			"dark": "#e6c35f"
+		}
+	}
+}
