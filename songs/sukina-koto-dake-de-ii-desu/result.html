@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>すきなことだけでいいです — LinguaMap</title>
+<style>
+/* ============================================================
+   LinguaMap engine styles — reusable parallel-text engine
+   Colour = part of speech (based on the source language).
+   Same class -> same colour family, in every sentence,
+   in every language column, in light and dark themes.
+   ============================================================ */
+
+:root{
+  --bg:#faf7f2; --card:#ffffff; --card2:#f6f1e7; --ink:#1f1c17;
+  --muted:#8a8578; --line:#e8e4dc; --btn:#ffffff; --btnline:#d8d2c4;
+  --hlbg:#ffd66b; --hlfg:#1f1c17;
+  /* POS palette (light) */
+  --pos-n:#1a5fc4;      /* noun            : blue            */
+  --pos-npr:#3240a8;    /* proper noun     : indigo (blue)   */
+  --pos-v:#c22b35;      /* verb            : red             */
+  --pos-adj:#1e7c34;    /* i-adjective     : green           */
+  --pos-adjna:#647c11;  /* na-adjective    : olive (green)   */
+  --pos-adv:#7c2cae;    /* adverb          : purple          */
+  --pos-pron:#0a7a80;   /* pronoun         : teal            */
+  --pos-conj:#bc5a10;   /* conjunction     : orange          */
+  --pos-interj:#b13272; /* interjection    : magenta         */
+  --pos-q:#93700a;      /* question word   : amber           */
+  --pos-part:#77705f;   /* particle        : warm gray       */
+}
+html[data-theme="dark"]{
+  --bg:#15171d; --card:#1d2027; --card2:#232733; --ink:#e9e6df;
+  --muted:#99a1af; --line:#2b303c; --btn:#232733; --btnline:#3a4150;
+  --hlbg:#a87f1e; --hlfg:#14161c;
+  --pos-n:#7fb2f0; --pos-npr:#94a2f0; --pos-v:#f28b8b; --pos-adj:#82d18d;
+  --pos-adjna:#c6d46e; --pos-adv:#cb9ee0; --pos-pron:#6fcbcd; --pos-conj:#f0a763;
+  --pos-interj:#f099c4; --pos-q:#e6c35f; --pos-part:#aab2bc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+     font:15.5px/1.6 "Segoe UI","Hiragino Kaku Gothic ProN","Hiragino Sans",
+     "Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;}
+.wrap{max-width:1300px;margin:0 auto;padding:0 20px}
+
+/* ---------------- header ---------------- */
+header{padding-top:26px;text-align:center}
+header h1{font-size:clamp(24px,3.6vw,38px);margin:0 0 6px;font-weight:700;letter-spacing:.02em}
+header h1 .unit{font-weight:700}
+header .subtitle{color:var(--muted);margin:2px 0;font-size:15px}
+header .credit{color:var(--muted);font-size:12.5px;margin:10px 0 12px}
+.controls{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin:6px 0 4px}
+.controls button{border:1px solid var(--btnline);background:var(--btn);border-radius:999px;
+  padding:7px 16px;font-size:13.5px;cursor:pointer;color:inherit}
+.controls button:hover{filter:brightness(.97)}
+.controls button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.controls label{font-size:13px;color:var(--muted);display:inline-flex;gap:5px;align-items:center;cursor:pointer}
+.controls .sep{width:1px;height:22px;background:var(--btnline)}
+#stats{color:var(--muted);font-size:12.5px;margin:2px 0 8px}
+.hint{color:var(--muted);font-size:12.5px;margin:6px auto 14px;max-width:900px}
+
+/* ---------------- legend ---------------- */
+.legend{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:4px 8px;margin:4px 0 10px}
+.legend .lg{color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.legend .cap{width:100%;text-align:center;color:var(--muted);font-size:12px;margin:0 0 2px}
+.chip{display:inline-block;font-size:11.5px;font-weight:600;padding:2.5px 11px;border-radius:999px;
+  border:1px solid transparent;cursor:pointer;user-select:none}
+.chip .cnt{opacity:.65;font-weight:400;font-size:10px}
+.chip.active{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink) inset}
+
+/* ---------------- POS colour classes ---------------- */
+.pos-n      {--c:var(--pos-n)}
+.pos-npr    {--c:var(--pos-npr)}
+.pos-v      {--c:var(--pos-v)}
+.pos-adj    {--c:var(--pos-adj)}
+.pos-adjna  {--c:var(--pos-adjna)}
+.pos-adv    {--c:var(--pos-adv)}
+.pos-pron   {--c:var(--pos-pron)}
+.pos-conj   {--c:var(--pos-conj)}
+.pos-interj {--c:var(--pos-interj)}
+.pos-q      {--c:var(--pos-q)}
+.pos-part   {--c:var(--pos-part)}
+.chip.pos-n, .chip.pos-npr, .chip.pos-v, .chip.pos-adj, .chip.pos-adjna,
+.chip.pos-adv, .chip.pos-pron, .chip.pos-conj, .chip.pos-interj,
+.chip.pos-q, .chip.pos-part{
+  color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent)}
+@supports not (background:color-mix(in srgb,red,blue)){
+  .chip.pos-n,.chip.pos-npr,.chip.pos-v,.chip.pos-adj,.chip.pos-adjna,
+  .chip.pos-adv,.chip.pos-pron,.chip.pos-conj,.chip.pos-interj,
+  .chip.pos-q,.chip.pos-part{background:rgba(128,128,128,.14)}}
+
+/* ---------------- mapped units ---------------- */
+.unit{color:var(--c);border-radius:3px;padding:0 1px;margin:0 .5px;cursor:pointer;
+  transition:opacity .15s}
+.unit:hover,.unit.sync{background:var(--hlbg);color:var(--hlfg)!important;font-weight:600;
+  box-shadow:0 0 0 1px var(--hlbg)}
+body.dimming #lines .unit:not(.sync){opacity:.16}
+body.dimming header .unit:not(.sync){opacity:.16}
+body.soloing #lines .unit:not(.solo){opacity:.16}
+body.soloing header .unit:not(.solo){opacity:.16}
+body.plain .unit{color:inherit!important;background:none!important;box-shadow:none!important;
+  font-weight:inherit!important;opacity:1!important;cursor:text}
+
+/* ---------------- plain-text panel (text fixation) ---------------- */
+#plain{margin:0 0 16px}
+#plain summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--muted)}
+#plain pre{white-space:pre-wrap;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:14px 18px;font-family:inherit;font-size:14.5px;
+  line-height:1.95;margin:10px 0 0}
+#plain .ok{color:var(--pos-adj);font-size:11px;margin-left:8px}
+
+/* ---------------- main grid ---------------- */
+#lines{background:var(--card);border:1px solid var(--line);border-radius:16px;
+  box-shadow:0 6px 24px rgba(0,0,0,.05);padding:4px 0;margin-bottom:8px;
+  display:grid;grid-template-columns:3rem repeat(4,minmax(0,1fr));gap:0 18px;
+  align-items:baseline}
+.line{display:contents}
+.lineno{color:var(--muted);font-size:11px;text-align:right;padding:10px 0 6px;
+  font-family:ui-monospace,Consolas,monospace;opacity:.8}
+.cell{padding:9px 0 8px;border-bottom:1px solid var(--line);min-width:0;overflow-wrap:break-word}
+.line:last-of-type .cell{border-bottom:none}
+.cell.z{background:var(--card2)}
+.cell.jp{font-weight:500}
+.cell.tr{color:var(--muted);font-size:13.5px}
+.hcell{padding:10px 0 9px;font-weight:600;letter-spacing:.06em;font-size:12.5px;
+  color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--line)}
+.hcell .mirror{opacity:.6;font-weight:400;text-transform:none;letter-spacing:0}
+.gapcell{grid-column:1/-1;height:14px;border-bottom:none}
+.sectioncell{grid-column:1/-1;font-size:12px;font-weight:700;color:var(--muted);
+  letter-spacing:.1em;text-transform:uppercase;padding:14px 0 4px;border-bottom:none}
+.titlecell{font-size:clamp(17px,2vw,22px);padding:16px 0 12px}
+.titlecell.jp{font-weight:600}
+
+/* ---------------- panels (vocab / validation) ---------------- */
+.panel{margin:18px 0 26px}
+.panel summary{cursor:pointer;font-weight:600;font-size:15px}
+.panel .pnote{color:var(--muted);font-size:12.5px;margin:2px 0 10px}
+#valBadge{display:inline-block;min-width:20px;text-align:center;border-radius:999px;
+  padding:0 8px;font-size:12px;font-weight:700;margin-left:6px}
+#valBadge.ok{background:color-mix(in srgb,var(--pos-adj) 20%,transparent);color:var(--pos-adj)}
+#valBadge.bad{background:color-mix(in srgb,var(--pos-v) 20%,transparent);color:var(--pos-v)}
+.valitem{font:12.5px/1.5 ui-monospace,Consolas,monospace;padding:4px 10px;border-left:3px solid var(--pos-q);
+  background:var(--card);margin:4px 0;border-radius:0 6px 6px 0;white-space:pre-wrap}
+.valitem.err{border-left-color:var(--pos-v)}
+.valitem.ok{border-left-color:var(--pos-adj)}
+#vsearch{margin:0 0 10px;padding:8px 14px;border:1px solid var(--line);border-radius:999px;
+  width:min(360px,100%);font-size:14px;outline:none;background:var(--card);color:inherit}
+.vrow{display:grid;grid-template-columns:110px 150px 1fr .9fr 1fr 1.1fr 42px;gap:12px;
+  padding:6px 12px;border-bottom:1px solid var(--line);font-size:13.5px;cursor:pointer;
+  align-items:baseline;background:var(--card)}
+.vrow:hover{filter:brightness(.985)}
+.vrow.active{background:var(--hlbg);color:var(--hlfg)}
+.vrow .nm{color:var(--muted);font-family:ui-monospace,Consolas,monospace;font-size:12px;
+  word-break:break-all}
+.vrow .vtr{color:var(--muted);font-size:13px}
+.vrow .vct{color:var(--muted);font-size:11.5px;text-align:right}
+.vgroup{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.08em;
+  text-transform:uppercase;padding:12px 12px 2px}
+
+/* ---------------- footer ---------------- */
+footer{max-width:1300px;margin:0 auto;padding:14px 20px 40px;color:var(--muted);
+  font-size:12px;text-align:center}
+footer code{font-size:11px}
+
+/* ---------------- responsive ---------------- */
+@media(max-width:860px){
+  #lines{display:block;padding:2px 12px 8px}
+  .line{display:grid;grid-template-columns:1fr;gap:0;padding:6px 0}
+  .lineno{display:none}
+  .hcell{display:none}
+  .cell{border-bottom:1px dashed var(--line);padding:7px 0 6px}
+  .cell.z{background:none}
+  .cell.jp,.cell.tr,.cell.ru,.cell.en{font-size:14px;line-height:1.95}
+  .cell.tr{font-size:13px}
+  .cell::before{content:attr(data-full);display:inline-block;font-size:9.5px;font-weight:700;
+    color:var(--bg);background:var(--muted);border-radius:4px;padding:1px 6px;margin-right:8px;
+    position:relative;top:-2px;letter-spacing:.08em}
+  .gapcell,.sectioncell{padding:8px 0 2px}
+  .vrow{grid-template-columns:96px 1fr;row-gap:1px}
+  .vrow .vjp,.vrow .vtr,.vrow .ven,.vrow .vru,.vrow .vct{grid-column:2}
+}
+@media(max-width:560px){
+  .controls{gap:6px}
+  .controls label{display:none}
+}
+
+/* ---------------- print ---------------- */
+@media print{
+  .controls,#plain,.panel,footer,#stats{display:none!important}
+  body{background:#fff;color:#000;font-size:11px}
+  #lines{box-shadow:none;border:none;grid-template-columns:2.4rem repeat(4,minmax(0,1fr))!important}
+  .cell{border-bottom:1px solid #ddd;padding:5px 0}
+  .unit{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .line{break-inside:avoid}
+}
+
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <h1 id="appTitle"></h1>
+  <p class="subtitle" id="appSub"></p>
+  <p class="credit" id="appCredit"></p>
+
+  <div class="controls">
+    <span id="colbox"></span>
+    <span class="sep"></span>
+    <button id="btnPlain" type="button">Plain text</button>
+    <button id="btnVocab" type="button">Vocabulary</button>
+    <button id="btnVal" type="button">Validation&nbsp;<span id="valBadge" class="ok">OK</span></button>
+    <button id="btnTheme" type="button">Dark</button>
+  </div>
+
+  <div class="legend" id="legend"></div>
+  <p class="hint">Hover or tap any word: the same meaning lights up in every column. Click to pin, Esc to release. Click a legend chip to focus one part of speech; use the checkboxes to show or hide languages.</p>
+  <p id="stats"></p>
+
+  <details id="plain">
+    <summary>Step 1 — Text fixation: source text reconstructed from the mapped data</summary>
+    <pre id="plainPre"></pre>
+  </details>
+</header>
+
+<main class="wrap">
+  <div id="lines"></div>
+
+  <details id="vocabPanel" class="panel">
+    <summary>Vocabulary index — every <code>name</code>, grouped by part of speech</summary>
+    <p class="pnote">Auto-generated from the data table: 日本語 / Romaji / English / Русский per meaning, with occurrence counts. Click a row to pin it in the text.</p>
+    <input id="vsearch" type="text" placeholder="Filter… (meaning, romaji, translation)">
+    <div id="vlist"></div>
+  </details>
+
+  <details id="valPanel" class="panel">
+    <summary>Validation — data invariants</summary>
+    <p class="pnote">Checks: jp cells reconstruct the fixation source character-for-character · jp/tr mirror is structural · en/ru order arrays are exact permutations · one POS per name · all columns filled.</p>
+    <div id="valList"></div>
+  </details>
+</main>
+
+<footer class="wrap">
+  Built with the LinguaMap template — swap the META + DATA block to reuse for any text (workflow &amp; pitfalls: AGENTS.md).
+  Identical <code>name</code> = identical meaning · colour = part of speech · transliteration mirrors the source word order.
+</footer>
+
+<script>
+/* ============================================================
+   LinguaMap validator — pure function, no DOM.
+   Runs in the browser (Validation panel) and in the Node build
+   harness (build fails on ERROR-level issues).
+
+   Encoding of the hard invariants from the AGENTS.md spec:
+   I1  same name  => same meaning, present in EVERY language column
+   I2  jp column  = source text, character for character (src check)
+   I3  tr column mirrors jp order — guaranteed by the data model
+       (jp and tr live in the same unit object); verified per line
+       if an explicit trOrd is given
+   I4  en/ru free order — but their ord arrays must be permutations
+       of the unit names (no drops, no unknown names)
+   I5  one POS per name, consistent across the whole file
+   I6  POS codes must exist in META.posLabels
+   ============================================================ */
+"use strict";
+
+function validateData(META, DATA) {
+  var issues = [];
+  var stats = { lines: 0, units: 0, uniqueNames: 0, spans: 0 };
+  var posSet = Object.keys(META.posLabels || {});
+  var cols = META.columns || [];
+  var nameInfo = {};   // name -> {pos, jp, count}
+
+  function err(msg) { issues.push({ sev: "err", msg: msg }); }
+  function warn(msg) { issues.push({ sev: "warn", msg: msg }); }
+
+  if (!cols.length) err("META.columns is empty");
+  if (!posSet.length) err("META.posLabels is empty");
+
+  DATA.forEach(function (block, bi) {
+    if (block.type !== "line") return;
+    stats.lines += 1;
+    var no = block.no || bi + 1;
+    var names = [];
+
+    if (!block.units || !block.units.length) {
+      err("L" + no + ": line has no units");
+      return;
+    }
+
+    block.units.forEach(function (u) {
+      stats.units += 1;
+      if (!u.name || typeof u.name !== "string") {
+        err("L" + no + ": unit without a name");
+        return;
+      }
+      names.push(u.name);
+      cols.forEach(function (lang) {
+        var t = u[lang];
+        if (typeof t !== "string" || !t.trim()) {
+          err("L" + no + " [" + u.name + "]: empty text for column \"" + lang + "\"");
+        }
+      });
+      if (posSet.indexOf(u.pos) === -1) {
+        err("L" + no + " [" + u.name + "]: unknown POS code \"" + u.pos + "\"");
+      }
+      var prev = nameInfo[u.name];
+      if (prev) {
+        prev.count += 1;
+        if (prev.pos !== u.pos) {
+          err("name \"" + u.name + "\": POS conflict (" + prev.pos + " vs " + u.pos + ")");
+        }
+        if (prev.jp !== u.jp) {
+          warn("name \"" + u.name + "\": jp surface differs between occurrences (\"" +
+               prev.jp + "\" vs \"" + u.jp + "\")");
+        }
+      } else {
+        nameInfo[u.name] = { pos: u.pos, jp: u.jp, count: 1 };
+        stats.uniqueNames += 1;
+      }
+    });
+
+    /* I2: jp concat vs fixation source */
+    if (block.src) {
+      var concat = block.units.map(function (u) { return u.jp || ""; }).join("");
+      if (concat !== block.src) {
+        err("L" + no + ": jp cells do not reconstruct the source text\n" +
+            "   got:  " + concat + "\n   want: " + block.src);
+      }
+    }
+
+    /* duplicate name inside one line (legit for repeated words -> warn) */
+    var seen = {};
+    names.forEach(function (n) {
+      if (seen[n]) warn("L" + no + ": name \"" + n + "\" occurs twice in one line");
+      seen[n] = 1;
+    });
+
+    /* I4: ord arrays must be permutations of the line's unit names */
+    cols.forEach(function (lang) {
+      var ord = block.ord && block.ord[lang];
+      if (!ord) return;
+      ord.forEach(function (n) {
+        if (names.indexOf(n) === -1) {
+          err("L" + no + ": ord." + lang + " contains unknown name \"" + n + "\"");
+        }
+      });
+      var a = ord.slice().sort().join("\u0001");
+      var b = names.slice().sort().join("\u0001");
+      if (a !== b) {
+        err("L" + no + ": ord." + lang + " is not a permutation of the line's names");
+      }
+    });
+
+    /* I3: explicit tr mirror check, if the author chose to spell it out */
+    if (block.trOrd) {
+      var jpSeq = names.join("\u0001");
+      if (block.trOrd.join("\u0001") !== jpSeq) {
+        err("L" + no + ": trOrd does not mirror the jp order (I3 violated)");
+      }
+    }
+  });
+
+  stats.spans = stats.units;
+  var errs = issues.filter(function (i) { return i.sev === "err"; }).length;
+  var warns = issues.length - errs;
+  return { issues: issues, stats: stats, errors: errs, warnings: warns };
+}
+
+if (typeof module !== "undefined") module.exports = { validateData: validateData };
+
+</script>
+<script id="data">
+"use strict";
+
+/* Line-aligned starter map: refine one-unit lines into meaning units. */
+const META = {
+	title: "すきなことだけでいいです — LinguaMap",
+	subtitle: "Parallel word map: 日本語 · Romaji · English · Русский",
+	credit: "Generated from line-aligned expected translations by tools/song.py. One unit per source line; colours and POS are placeholders until word-level segmentation. Repeated refrains share names, so surface-variant warnings are intentional.",
+	columns: ["ru", "en", "jp", "tr"],
+	columnTitles: { ru: "Русский", en: "English", jp: "日本語", tr: "Romaji" },
+	trMirror: true,
+	posLabels: { n: "line (starter map)" },
+	posOrder: ["n"]
+};
+
+const DATA = [
+	{ type: "section", label: "Stanza 1" },
+	{ type: "line", src: "平日は嫌　休みが好き", units: [
+		{ name: "line_i_don_t_like_605988ad", pos: "n", jp: "平日は嫌　休みが好き", tr: "heijitsu wa iya yasumi ga suki", en: "I don’t like weekdays, I like the weekend", ru: "Будни мне не нравятся, зато выходные — да" }
+	] },
+	{ type: "line", src: "仕事は嫌　二度寝が好き", units: [
+		{ name: "line_i_don_t_like_78e65907", pos: "n", jp: "仕事は嫌　二度寝が好き", tr: "shigoto wa iya nidone ga suki", en: "I don’t like work, I like going back to sleep", ru: "Работа мне не нравится, зато люблю снова уснуть" }
+	] },
+	{ type: "line", src: "怠けたまま暮らすの無理", units: [
+		{ name: "line_it_s_impossible_to_3fe83d7c", pos: "n", jp: "怠けたまま暮らすの無理", tr: "namaketa mama kurasu no muri", en: "It’s impossible to live on slacking like this", ru: "Жить всё время в лени не выйдет" }
+	] },
+	{ type: "line", src: "遠のいていく意識", units: [
+		{ name: "line_my_consciousness_recedes_77f6efe2", pos: "n", jp: "遠のいていく意識", tr: "toonoite iku ishiki", en: "My consciousness recedes", ru: "Сознание уплывает всё дальше" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 2" },
+	{ type: "line", src: "野菜は嫌　ハンバーグが好き", units: [
+		{ name: "line_i_don_t_like_4db0090b", pos: "n", jp: "野菜は嫌　ハンバーグが好き", tr: "yasai wa iya hanbaagu ga suki", en: "I don’t like vegetables, I like hamburgers", ru: "Овощи не люблю, зато гамбургеры обожаю" }
+	] },
+	{ type: "line", src: "麦茶は嫌　ジュースが好き", units: [
+		{ name: "line_i_don_t_like_826b90a3", pos: "n", jp: "麦茶は嫌　ジュースが好き", tr: "mugicha wa iya juusu ga suki", en: "I don’t like barley tea, I like juice", ru: "Ячменный чай не люблю, зато сок — да" }
+	] },
+	{ type: "line", src: "甘えんな　でも甘味は好き", units: [
+		{ name: "line_don_t_be_sweet_c06bf454", pos: "n", jp: "甘えんな　でも甘味は好き", tr: "amaenna demo kanmi wa suki", en: "Don’t be sweet on me, but I like sweet tasting things", ru: "Не будь приторным, но сладкое я люблю" }
+	] },
+	{ type: "line", src: "生前の１ページ", units: [
+		{ name: "line_my_lifetime_s_first_a5f4c397", pos: "n", jp: "生前の１ページ", tr: "seizen no ichi-peeji", en: "My lifetime’s first page", ru: "Первая страница моей жизни" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 3" },
+	{ type: "line", src: "好きなことだけ見つめて", units: [
+		{ name: "line_only_looking_at_things_b79134df", pos: "n", jp: "好きなことだけ見つめて", tr: "suki na koto dake mitsumete", en: "Only looking at things I like", ru: "Смотрю лишь на то, что люблю" }
+	] },
+	{ type: "line", src: "だんだん　視力が弱くなる", units: [
+		{ name: "line_gradually_my_eyesight_gets_6f78d419", pos: "n", jp: "だんだん　視力が弱くなる", tr: "dandan shiryoku ga yowaku naru", en: "gradually my eyesight gets worse", ru: "И постепенно зрение слабеет" }
+	] },
+	{ type: "line", src: "好きなことで満たされて", units: [
+		{ name: "line_only_being_filled_with_0de26b98", pos: "n", jp: "好きなことで満たされて", tr: "suki na koto de mitasarete", en: "Only being filled with things I like", ru: "Наполняясь лишь тем, что люблю" }
+	] },
+	{ type: "line", src: "だんだん　頭が悪くなる", units: [
+		{ name: "line_gradually_my_mind_gets_d579c05e", pos: "n", jp: "だんだん　頭が悪くなる", tr: "dandan atama ga waruku naru", en: "gradually my mind gets duller", ru: "И постепенно глупею" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 4" },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "みんな　好きなことが好きなんです", units: [
+		{ name: "line_everyone_likes_the_things_901d5b0e", pos: "n", jp: "みんな　好きなことが好きなんです", tr: "minna suki na koto ga suki na ndesu", en: "Everyone likes the things they like", ru: "Все любят то, что любят" }
+	] },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "みんな　嫌なことは嫌なんです", units: [
+		{ name: "line_everyone_dislikes_the_things_047992cb", pos: "n", jp: "みんな　嫌なことは嫌なんです", tr: "minna iya na koto wa iya na ndesu", en: "Everyone dislikes the things they dislike", ru: "Всем не нравится то, что не нравится" }
+	] },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "ほんと　すきなことだけでいいです", units: [
+		{ name: "line_really_all_i_need_c3a476e8", pos: "n", jp: "ほんと　すきなことだけでいいです", tr: "honto suki na koto dake de ii desu", en: "Really, All I need are the things I like", ru: "Правда, мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "全人類が好きなことやったら", units: [
+		{ name: "line_although_if_all_of_e13ffd20", pos: "n", jp: "全人類が好きなことやったら", tr: "zenjinrui ga suki na koto yattara", en: "Although, if all of humanity just did the things they like,", ru: "Если бы все люди делали лишь то, что любят," }
+	] },
+	{ type: "line", src: "世界は滅亡するけど", units: [
+		{ name: "line_the_world_would_turn_02d9097a", pos: "n", jp: "世界は滅亡するけど", tr: "sekai wa metsubou suru kedo", en: "the world would turn to ruin", ru: "мир бы погиб — и всё же" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 5" },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "君のことが　ほんとに好きなんです", units: [
+		{ name: "line_i_really_like_you_2cbe823c", pos: "n", jp: "君のことが　ほんとに好きなんです", tr: "kimi no koto ga honto ni suki na ndesu", en: "I really like you", ru: "А тебя я правда люблю" }
+	] },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "君は違う誰かが好きなんです", units: [
+		{ name: "line_you_like_someone_else_afa5df6f", pos: "n", jp: "君は違う誰かが好きなんです", tr: "kimi wa chigau dareka ga suki na ndesu", en: "You like someone else", ru: "Но ты любишь кого-то другого" }
+	] },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "やっぱ　それだけじゃ難しいです", units: [
+		{ name: "line_after_all_i_guess_7e4ec405", pos: "n", jp: "やっぱ　それだけじゃ難しいです", tr: "yappa sore dake ja muzukashii desu", en: "After all, I guess it would be pretty difficult to have only that", ru: "Всё же, наверное, только этим не обойтись" }
+	] },
+	{ type: "line", src: "全人類が幸せになったら", units: [
+		{ name: "line_because_if_all_of_422d34be", pos: "n", jp: "全人類が幸せになったら", tr: "zenjinrui ga shiawase ni nattara", en: "because If all of humanity was happy,", ru: "Ведь если бы все люди стали счастливы," }
+	] },
+	{ type: "line", src: "宇宙が迷惑するから", units: [
+		{ name: "line_the_rest_of_the_03ac3244", pos: "n", jp: "宇宙が迷惑するから", tr: "uchuu ga meiwaku suru kara", en: "the rest of the universe would be troubled", ru: "остальной вселенной пришлось бы туго" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 6" },
+	{ type: "line", src: "天使は嫌　悪魔が好き", units: [
+		{ name: "line_i_don_t_like_d0e8cf86", pos: "n", jp: "天使は嫌　悪魔が好き", tr: "tenshi wa iya akuma ga suki", en: "I don’t like angels, I like demons", ru: "Ангелов не люблю, зато демонов — да" }
+	] },
+	{ type: "line", src: "天国は嫌　地獄が好き", units: [
+		{ name: "line_i_don_t_like_2828d6d9", pos: "n", jp: "天国は嫌　地獄が好き", tr: "tengoku wa iya jigoku ga suki", en: "I don’t like heaven, I like hell", ru: "Рай не люблю, зато ад — да" }
+	] },
+	{ type: "line", src: "あべこべだった　君の趣味", units: [
+		{ name: "line_your_tastes_were_always_dd0f53af", pos: "n", jp: "あべこべだった　君の趣味", tr: "abekobe datta kimi no shumi", en: "Your tastes were always the opposite", ru: "Твои вкусы были всему наперекор" }
+	] },
+	{ type: "line", src: "人それぞれのクレイジー", units: [
+		{ name: "line_people_are_all_crazy_9c4bb1d7", pos: "n", jp: "人それぞれのクレイジー", tr: "hito sorezore no kureijii", en: "People are all crazy in their own ways", ru: "У каждого своё безумие" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 7" },
+	{ type: "line", src: "生物は嫌　機械が好き", units: [
+		{ name: "line_i_don_t_like_a638cb23", pos: "n", jp: "生物は嫌　機械が好き", tr: "seibutsu wa iya kikai ga suki", en: "I don’t like living things, I like machines", ru: "Живое не люблю, зато машины — да" }
+	] },
+	{ type: "line", src: "リアルは嫌　虚像が好き", units: [
+		{ name: "line_i_don_t_like_81675726", pos: "n", jp: "リアルは嫌　虚像が好き", tr: "riaru wa iya kyozou ga suki", en: "I don’t like the real world, I like the virtual", ru: "Реальность не люблю, зато вымысел — да" }
+	] },
+	{ type: "line", src: "偏っていた　君の趣味", units: [
+		{ name: "line_your_tastes_were_always_dc634246", pos: "n", jp: "偏っていた　君の趣味", tr: "katayotte ita kimi no shumi", en: "Your tastes were always biased", ru: "Твои вкусы были однобоки" }
+	] },
+	{ type: "line", src: "悪化して思考停止", units: [
+		{ name: "line_deteriorating_and_ceasing_to_8a8003ed", pos: "n", jp: "悪化して思考停止", tr: "akka shite shikouteishi", en: "deteriorating and ceasing to think", ru: "Всё ухудшалось, разум замер" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 8" },
+	{ type: "line", src: "好きなことに囲まれて", units: [
+		{ name: "line_surrounded_by_the_things_922534b6", pos: "n", jp: "好きなことに囲まれて", tr: "suki na koto ni kakomarete", en: "Surrounded by the things I like", ru: "Окружён лишь тем, что люблю," }
+	] },
+	{ type: "line", src: "嫌なことが許せなくなる", units: [
+		{ name: "line_i_ve_become_unforgiving_cd425de9", pos: "n", jp: "嫌なことが許せなくなる", tr: "iya na koto ga yurusenaku naru", en: "I’ve become unforgiving to the things I don’t like", ru: "и уже не могу терпеть то, что не люблю" }
+	] },
+	{ type: "line", src: "好きなことだけで生きて", units: [
+		{ name: "line_living_only_with_the_48f2c40b", pos: "n", jp: "好きなことだけで生きて", tr: "suki na koto dake de ikite", en: "Living only with the things I like", ru: "Живу лишь тем, что люблю," }
+	] },
+	{ type: "line", src: "どこかの誰かに恨まれる", units: [
+		{ name: "line_i_m_resented_by_b8fda9cb", pos: "n", jp: "どこかの誰かに恨まれる", tr: "dokoka no dareka ni uramareru", en: "I'm resented by someone, somewhere", ru: "и кто-то где-то держит на меня обиду" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 9" },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "みんな　好きなことが好きなんです", units: [
+		{ name: "line_everyone_likes_the_things_901d5b0e", pos: "n", jp: "みんな　好きなことが好きなんです", tr: "minna suki na koto ga suki na ndesu", en: "Everyone likes the things they like", ru: "Все любят то, что любят" }
+	] },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "みんな　嫌なことは嫌なんです", units: [
+		{ name: "line_everyone_dislikes_the_things_047992cb", pos: "n", jp: "みんな　嫌なことは嫌なんです", tr: "minna iya na koto wa iya na ndesu", en: "Everyone dislikes the things they dislike", ru: "Всем не нравится то, что не нравится" }
+	] },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "ほんと　すきなことだけでいいです", units: [
+		{ name: "line_really_all_i_need_c3a476e8", pos: "n", jp: "ほんと　すきなことだけでいいです", tr: "honto suki na koto dake de ii desu", en: "Really, All I need are the things I like", ru: "Правда, мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "全人類が好きなことやったら", units: [
+		{ name: "line_although_if_all_of_e13ffd20", pos: "n", jp: "全人類が好きなことやったら", tr: "zenjinrui ga suki na koto yattara", en: "Although, if all of humanity just did the things they like,", ru: "Если бы все люди делали лишь то, что любят," }
+	] },
+	{ type: "line", src: "世界は滅亡するけど", units: [
+		{ name: "line_the_world_would_turn_02d9097a", pos: "n", jp: "世界は滅亡するけど", tr: "sekai wa metsubou suru kedo", en: "the world would turn to ruin", ru: "мир бы погиб — и всё же" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 10" },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "ずっと　仲間と笑っていたいんです", units: [
+		{ name: "line_i_just_want_to_e8784b91", pos: "n", jp: "ずっと　仲間と笑っていたいんです", tr: "zutto nakama to waratte itai ndesu", en: "I just want to smile with my friends all the time", ru: "Мне хочется всё время смеяться с друзьями" }
+	] },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "だけど　仲間が全然いないんです", units: [
+		{ name: "line_although_i_have_no_1c5cde8f", pos: "n", jp: "だけど　仲間が全然いないんです", tr: "dakedo nakama ga zenzen inai ndesu", en: "Although I have no friends to do that with", ru: "Но друзей у меня совсем нет" }
+	] },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "やっぱ　それだけじゃ難しいです", units: [
+		{ name: "line_after_all_i_guess_7e4ec405", pos: "n", jp: "やっぱ　それだけじゃ難しいです", tr: "yappa sore dake ja muzukashii desu", en: "After all, I guess it would be pretty difficult to have only that", ru: "Всё же, наверное, только этим не обойтись" }
+	] },
+	{ type: "line", src: "全人類の願いが叶ったら", units: [
+		{ name: "line_because_if_all_of_ad9ced09", pos: "n", jp: "全人類の願いが叶ったら", tr: "zenjinrui no negai ga kanattara", en: "because if all of humanity's wishes were granted,", ru: "Ведь если бы исполнились желания всех людей," }
+	] },
+	{ type: "line", src: "地球が爆発するから", units: [
+		{ name: "line_the_world_would_explode_9ddd199b", pos: "n", jp: "地球が爆発するから", tr: "chikyuu ga bakuhatsu suru kara", en: "the world would explode", ru: "Земля бы взорвалась" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 11" },
+	{ type: "line", src: "待ち合わせの約束があった", units: [
+		{ name: "line_i_had_promised_to_d320751a", pos: "n", jp: "待ち合わせの約束があった", tr: "machiawase no yakusoku ga atta", en: "I had promised to meet someone", ru: "Я обещал встретиться с кем-то" }
+	] },
+	{ type: "line", src: "雨が嫌だから　行かなかった", units: [
+		{ name: "line_but_because_i_don_734b54a9", pos: "n", jp: "雨が嫌だから　行かなかった", tr: "ame ga iya dakara ikanakatta", en: "but because I don’t like the rain, I didn’t go", ru: "Но не люблю дождь — и не пошёл" }
+	] },
+	{ type: "line", src: "出かけてたら　良いことあったかな", units: [
+		{ name: "line_i_wonder_if_something_e856e2a9", pos: "n", jp: "出かけてたら　良いことあったかな", tr: "dekaketetara ii koto atta kana", en: "I wonder if something good would have happened if I went", ru: "Если бы вышел, может, случилось бы что-то хорошее?" }
+	] },
+	{ type: "line", src: "今際の際の走馬灯", units: [
+		{ name: "line_my_life_flashes_before_3a658ae4", pos: "n", jp: "今際の際の走馬灯", tr: "imawanokiwa no soumatou", en: "My life flashes before my eyes in my last moments", ru: "В последний миг вся жизнь перед глазами" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 12" },
+	{ type: "line", src: "好きなことだけでいいです…", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "好きなことだけでいいです…", tr: "suki na koto dake de ii desu …", en: "All I need are the things I like...", ru: "Мне хватит только того, что люблю…" }
+	] },
+	{ type: "line", src: "全人類が好きなことやったら", units: [
+		{ name: "line_although_if_all_of_e13ffd20", pos: "n", jp: "全人類が好きなことやったら", tr: "zenjinrui ga suki na koto yattara", en: "Although, if all of humanity just did the things they like,", ru: "Если бы все люди делали лишь то, что любят," }
+	] },
+	{ type: "line", src: "世界は滅亡するけど", units: [
+		{ name: "line_the_world_would_turn_02d9097a", pos: "n", jp: "世界は滅亡するけど", tr: "sekai wa metsubou suru kedo", en: "the world would turn to ruin", ru: "мир бы погиб — и всё же" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 13" },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "みんな　好きなことが好きでした", units: [
+		{ name: "line_everyone_just_liked_the_db140c5a", pos: "n", jp: "みんな　好きなことが好きでした", tr: "minna suki na koto ga suki deshita", en: "Everyone just liked the things they liked", ru: "Все любили то, что любили" }
+	] },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "みんな　嫌なことは嫌でした", units: [
+		{ name: "line_everyone_disliked_the_things_24aa3722", pos: "n", jp: "みんな　嫌なことは嫌でした", tr: "minna iya na koto wa iya deshita", en: "Everyone disliked the things they disliked", ru: "Всем не нравилось то, что не нравилось" }
+	] },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "ほんと　すきなことだけでいいです", units: [
+		{ name: "line_really_all_i_need_c3a476e8", pos: "n", jp: "ほんと　すきなことだけでいいです", tr: "honto suki na koto dake de ii desu", en: "Really, all I need are the things I like", ru: "Правда, мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "全人類が好きなことやったら", units: [
+		{ name: "line_although_if_all_of_e13ffd20", pos: "n", jp: "全人類が好きなことやったら", tr: "zenjinrui ga suki na koto yattara", en: "Although, when all of humanity just did the things they liked,", ru: "Если бы все люди делали лишь то, что любят," }
+	] },
+	{ type: "line", src: "世界は滅亡したけど", units: [
+		{ name: "line_the_world_turned_to_771b473a", pos: "n", jp: "世界は滅亡したけど", tr: "sekai wa metsubou shita kedo", en: "the world turned to ruin", ru: "мир погиб — и всё же" }
+	] },
+	{ type: "gap" },
+	{ type: "section", label: "Stanza 14" },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "君のことが　ほんとに好きでした", units: [
+		{ name: "line_i_really_liked_you_ac1a16c4", pos: "n", jp: "君のことが　ほんとに好きでした", tr: "kimi no koto ga honto ni suki deshita", en: "I really liked you", ru: "А тебя я правда любил" }
+	] },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "君は違う誰かが好きでした", units: [
+		{ name: "line_you_liked_someone_else_2be834ea", pos: "n", jp: "君は違う誰かが好きでした", tr: "kimi wa chigau dareka ga suki deshita", en: "You liked someone else", ru: "Но сердце твоё было с другим" }
+	] },
+	{ type: "line", src: "すきなことだけでいいです", units: [
+		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
+	] },
+	{ type: "line", src: "やっぱ　それだけじゃ難しいです", units: [
+		{ name: "line_after_all_i_guess_7e4ec405", pos: "n", jp: "やっぱ　それだけじゃ難しいです", tr: "yappa sore dake ja muzukashii desu", en: "After all I guess, it would be pretty difficult to have only that", ru: "Всё же, наверное, только этим не обойтись" }
+	] },
+	{ type: "line", src: "全人類が幸せになったら", units: [
+		{ name: "line_because_if_all_of_422d34be", pos: "n", jp: "全人類が幸せになったら", tr: "zenjinrui ga shiawase ni nattara", en: "because If all of humanity was happy,", ru: "Ведь если бы все люди стали счастливы," }
+	] },
+	{ type: "line", src: "宇宙が迷惑するから", units: [
+		{ name: "line_the_rest_of_the_03ac3244", pos: "n", jp: "宇宙が迷惑するから", tr: "uchuu ga meiwaku suru kara", en: "the rest of the universe would be troubled", ru: "остальной вселенной пришлось бы туго" }
+	] }
+];
+</script>
+<script>
+/* ============================================================
+   LinguaMap engine v1.1 — data-driven parallel-text renderer.
+   Expects globals: META, DATA (see <script id="data">) and the
+   pure validator validateData() (loaded before this file).
+
+   Data model (why it is safe):
+   - ONE unit object holds ALL languages: {name,pos,jp,tr,en,ru,...}
+     -> a name can never drift between languages;
+   - the jp column renders the units array in array order, and the
+     transliteration column renders the SAME array -> jp<->tr order
+     mirror is structurally guaranteed;
+   - target languages may reorder via block.ord.{lang} = [names...];
+     the validator proves those are exact permutations (no drops).
+   ============================================================ */
+(function () {
+  "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var el = function (tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  };
+
+  var COLS = META.columns;
+  var state = { pinned: null, solo: null, cols: {}, plain: false };
+  COLS.forEach(function (c) { state.cols[c] = true; });
+
+  /* ---------- ordering ---------- */
+  function orderFor(block, lang) {
+    var units = block.units;
+    var ord = block.ord && block.ord[lang];
+    if (!ord) return units.slice();
+    var q = {};
+    units.forEach(function (u) { (q[u.name] = q[u.name] || []).push(u); });
+    var out = [];
+    ord.forEach(function (n) {
+      var u = (q[n] || []).shift();
+      if (u) out.push(u);
+    });
+    return out;
+  }
+
+  /* ---------- rendering ---------- */
+  function makeSpan(u, lang) {
+    var s = el("span", "unit pos-" + (u.pos || "part"), u[lang]);
+    s.setAttribute("data-name", u.name);
+    s.setAttribute("data-pos", u.pos || "part");
+    return s;
+  }
+
+  function fillCell(cell, block, lang) {
+    orderFor(block, lang).forEach(function (u) {
+      cell.appendChild(makeSpan(u, lang));
+      cell.appendChild(document.createTextNode(" "));
+    });
+  }
+
+  function renderLineRow(container, block, num, odd) {
+    var row = el("div", "line");
+    var z = odd ? " z" : "";
+    var ln = el("div", "lineno" + z, num || "");
+    row.appendChild(ln);
+    COLS.forEach(function (lang) {
+      var cell = el("div", "cell lang-" + lang + z);
+      cell.setAttribute("data-lang", lang);
+      cell.setAttribute("data-full", (META.columnTitles || {})[lang] || lang);
+      fillCell(cell, block, lang);
+      row.appendChild(cell);
+    });
+    container.appendChild(row);
+  }
+
+  function renderTitleRow(container, block) {
+    var row = el("div", "line");
+    var ln = el("div", "lineno", "");
+    row.appendChild(ln);
+    COLS.forEach(function (lang) {
+      var cell = el("div", "cell titlecell lang-" + lang);
+      cell.setAttribute("data-lang", lang);
+      cell.setAttribute("data-full", (META.columnTitles || {})[lang] || lang);
+      fillCell(cell, block, lang);
+      row.appendChild(cell);
+    });
+    container.appendChild(row);
+  }
+
+  function render() {
+    var box = $("#lines");
+    box.innerHTML = "";
+    /* column header */
+    var head = el("div", "line");
+    head.appendChild(el("div", "lineno", "#"));
+    COLS.forEach(function (lang) {
+      var h = el("div", "hcell lang-" + lang, (META.columnTitles || {})[lang] || lang);
+      h.setAttribute("data-lang", lang);
+      if (lang === "tr" && META.trMirror !== false) {
+        h.appendChild(el("span", "mirror", "  (mirrors jp)"));
+      }
+      head.appendChild(h);
+    });
+    box.appendChild(head);
+
+    var n = 0;
+    DATA.forEach(function (block) {
+      if (block.type === "title") { renderTitleRow(box, block); return; }
+      if (block.type === "gap") {
+        var g = el("div", "line");
+        g.appendChild(el("div", "gapcell", ""));
+        box.appendChild(g);
+        return;
+      }
+      if (block.type === "section") {
+        var srow = el("div", "line");
+        srow.appendChild(el("div", "sectioncell", block.label || ""));
+        box.appendChild(srow);
+        return;
+      }
+      n += 1;
+      renderLineRow(box, block, String(n), n % 2 === 0);
+    });
+  }
+
+  /* ---------- highlight / pin ---------- */
+  function units() { return document.querySelectorAll(".unit"); }
+  function highlight(name) {
+    document.body.classList.add("dimming");
+    units().forEach(function (s) {
+      s.classList.toggle("sync", s.getAttribute("data-name") === name);
+    });
+    document.querySelectorAll(".vrow").forEach(function (r) {
+      r.classList.toggle("active", r.getAttribute("data-n") === name);
+    });
+  }
+  function clearHighlight() {
+    document.body.classList.remove("dimming");
+    units().forEach(function (s) { s.classList.remove("sync"); });
+    document.querySelectorAll(".vrow").forEach(function (r) { r.classList.remove("active"); });
+  }
+  function pin(name) {
+    if (state.pinned === name) { state.pinned = null; clearHighlight(); return; }
+    state.pinned = name;
+    highlight(name);
+  }
+  function wireUnit(s) {
+    var n = s.getAttribute("data-name");
+    s.addEventListener("mouseenter", function () { if (!state.pinned) highlight(n); });
+    s.addEventListener("mouseleave", function () { if (!state.pinned) clearHighlight(); });
+    s.addEventListener("click", function (e) { e.stopPropagation(); pin(n); });
+  }
+
+  /* ---------- legend ---------- */
+  var GROUPS = META.posGroups || [
+    { label: "nouns", codes: ["n", "npr"] },
+    { label: "verbs", codes: ["v"] },
+    { label: "adjectives", codes: ["adj", "adjna"] },
+    { label: "others", codes: ["adv", "pron", "conj", "interj", "part", "q"] }
+  ];
+  function posCounts() {
+    var c = {}, first = {};
+    DATA.forEach(function (b) {
+      if (!b.units) return;
+      b.units.forEach(function (u) {
+        if (first[u.name]) return;
+        first[u.name] = 1;
+        c[u.pos] = (c[u.pos] || 0) + 1;
+      });
+    });
+    return c;
+  }
+  function renderLegend() {
+    var box = $("#legend");
+    box.innerHTML = "";
+    box.appendChild(el("p", "cap",
+      "Word colours = parts of speech (based on the Japanese) - same class, same colour family. Click a chip to focus that class."));
+    var counts = posCounts();
+    GROUPS.forEach(function (g) {
+      box.appendChild(el("span", "lg", g.label));
+      g.codes.forEach(function (code) {
+        if (!(META.posLabels || {})[code]) return;
+        var chip = el("span", "chip pos-" + code,
+          (META.posLabels[code] || code) + " " + (counts[code] ? "(" + counts[code] + ")" : ""));
+        chip.setAttribute("data-pos", code);
+        chip.addEventListener("click", function () { solo(code); });
+        box.appendChild(chip);
+      });
+    });
+  }
+  function solo(code) {
+    if (state.solo === code) {
+      state.solo = null;
+      document.body.classList.remove("soloing");
+      units().forEach(function (s) { s.classList.remove("solo"); });
+      document.querySelectorAll(".chip").forEach(function (c) { c.classList.remove("active"); });
+      return;
+    }
+    state.solo = code;
+    document.body.classList.add("soloing");
+    units().forEach(function (s) {
+      s.classList.toggle("solo", s.getAttribute("data-pos") === code);
+    });
+    document.querySelectorAll(".chip").forEach(function (c) {
+      c.classList.toggle("active", c.getAttribute("data-pos") === code);
+    });
+  }
+
+  /* ---------- column toggles ---------- */
+  function renderColBox() {
+    var box = $("#colbox");
+    COLS.forEach(function (lang) {
+      var lab = el("label");
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = true;
+      cb.addEventListener("change", function () {
+        state.cols[lang] = cb.checked;
+        applyCols();
+      });
+      lab.appendChild(cb);
+      lab.appendChild(document.createTextNode((META.columnTitles || {})[lang] || lang));
+      box.appendChild(lab);
+    });
+  }
+  function applyCols() {
+    var n = COLS.filter(function (l) { return state.cols[l]; }).length;
+    $("#lines").style.gridTemplateColumns =
+      "3rem repeat(" + Math.max(n, 1) + ", minmax(0,1fr))";
+    document.querySelectorAll("#lines [data-lang]").forEach(function (c) {
+      var lang = c.getAttribute("data-lang");
+      if (lang) c.style.display = state.cols[lang] ? "" : "none";
+    });
+  }
+
+  /* ---------- plain-text (fixation) panel ---------- */
+  function renderPlain() {
+    var pre = $("#plainPre");
+    var out = [];
+    var n = 0;
+    DATA.forEach(function (b) {
+      if (b.type === "gap") { out.push(""); return; }
+      if (b.type === "section") { out.push("- " + (b.label || "") + " -"); return; }
+      if (b.type === "title" || !b.units) return;
+      n += 1;
+      var jp = b.units.map(function (u) { return u.jp || ""; }).join("");
+      var ok = b.src ? (jp === b.src ? "  [= source OK]" : "  [! MISMATCH]") : "";
+      out.push(String(n).padStart(2, " ") + ". " + jp + ok);
+    });
+    pre.textContent = out.join("\n");
+  }
+
+  /* ---------- vocabulary index ---------- */
+  function renderVocab() {
+    var list = $("#vlist");
+    list.innerHTML = "";
+    var seen = {}, order = [];
+    DATA.forEach(function (b) {
+      if (!b.units) return;
+      b.units.forEach(function (u) {
+        if (seen[u.name]) { seen[u.name].count += 1; return; }
+        seen[u.name] = { u: u, count: 1 };
+        order.push(u.name);
+      });
+    });
+    var posRank = {};
+    (META.posOrder || Object.keys(META.posLabels)).forEach(function (p, i) { posRank[p] = i; });
+    order.sort(function (a, b) {
+      var d = (posRank[seen[a].u.pos] || 99) - (posRank[seen[b].u.pos] || 99);
+      return d !== 0 ? d : (a < b ? -1 : a > b ? 1 : 0);
+    });
+    var lastPos = null;
+    order.forEach(function (name) {
+      var e = seen[name], u = e.u;
+      var missing = COLS.some(function (l) { return !(u[l] || "").trim(); });
+      if (missing) return;
+      if (u.pos !== lastPos) {
+        list.appendChild(el("div", "vgroup", (META.posLabels || {})[u.pos] || u.pos));
+        lastPos = u.pos;
+      }
+      var row = el("div", "vrow");
+      row.setAttribute("data-n", name);
+      var chip = el("span", "chip pos-" + u.pos, (META.posLabels || {})[u.pos] || u.pos);
+      row.appendChild(chip);
+      row.appendChild(el("span", "nm", name));
+      row.appendChild(el("span", "vjp", u.jp || ""));
+      row.appendChild(el("span", "vtr", u.tr || ""));
+      row.appendChild(el("span", "ven", u.en || ""));
+      row.appendChild(el("span", "vru", u.ru || ""));
+      row.appendChild(el("span", "vct", "x" + e.count));
+      row.addEventListener("click", function () { pin(name); });
+      list.appendChild(row);
+    });
+  }
+
+  /* ---------- validation panel ---------- */
+  function renderValidation() {
+    var res = validateData(META, DATA);
+    var badge = $("#valBadge");
+    badge.textContent = res.errors ? String(res.errors + res.warnings) : "OK";
+    badge.className = res.errors ? "bad" : "ok";
+    var list = $("#valList");
+    list.innerHTML = "";
+    var okLine = el("div", "valitem ok",
+      res.stats.lines + " lines | " + res.stats.uniqueNames + " unique meanings | " +
+      res.stats.spans + " mapped spans | " +
+      (res.errors ? res.errors + " ERRORS" : "no errors") + ", " +
+      res.warnings + " warnings");
+    list.appendChild(okLine);
+    if (!res.issues.length) {
+      list.appendChild(el("div", "valitem ok",
+        "All invariants hold: jp text reconstructs the source, jp/tr mirror is structural, ord arrays are permutations, one POS per name."));
+    }
+    res.issues.forEach(function (i) {
+      list.appendChild(el("div", "valitem " + (i.sev === "err" ? "err" : ""),
+        (i.sev === "err" ? "ERROR: " : "WARN: ") + i.msg));
+    });
+    return res;
+  }
+
+  /* ---------- boot ---------- */
+  document.addEventListener("DOMContentLoaded", function () {
+    $("#appTitle").textContent = META.title || "";
+    $("#appSub").textContent = META.subtitle || "";
+    $("#appCredit").textContent = META.credit || "";
+
+    render();
+    renderLegend();
+    renderColBox();
+    renderPlain();
+    renderVocab();
+    var res = renderValidation();
+    $("#stats").textContent =
+      res.stats.lines + " lines | " + res.stats.uniqueNames + " unique meanings | " +
+      res.stats.spans + " mapped spans | columns: " + COLS.join(" / ");
+    if (res.errors) console.warn("[LinguaMap] validation errors:", res.issues);
+
+    document.querySelectorAll(".unit").forEach(wireUnit);
+
+    document.addEventListener("click", function () {
+      if (state.pinned) { state.pinned = null; clearHighlight(); }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && state.pinned) { state.pinned = null; clearHighlight(); }
+    });
+
+    $("#btnTheme").addEventListener("click", function () {
+      var html = document.documentElement;
+      var dark = html.getAttribute("data-theme") === "dark";
+      html.setAttribute("data-theme", dark ? "light" : "dark");
+      $("#btnTheme").classList.toggle("on", !dark);
+      try { localStorage.setItem("linguamap-theme", dark ? "light" : "dark"); } catch (e) {}
+    });
+    try {
+      if (localStorage.getItem("linguamap-theme") === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+        $("#btnTheme").classList.add("on");
+      }
+    } catch (e) {}
+
+    $("#btnPlain").addEventListener("click", function () {
+      state.plain = !state.plain;
+      $("#plain").open = state.plain;
+      document.body.classList.toggle("plain", state.plain);
+      $("#btnPlain").classList.toggle("on", state.plain);
+    });
+    $("#btnVocab").addEventListener("click", function () {
+      var p = $("#vocabPanel");
+      p.open = !p.open;
+      $("#btnVocab").classList.toggle("on", p.open);
+    });
+    $("#btnVal").addEventListener("click", function () {
+      var p = $("#valPanel");
+      p.open = !p.open;
+      $("#btnVal").classList.toggle("on", p.open);
+    });
+    $("#vsearch").addEventListener("input", function (e) {
+      var q = e.target.value.toLowerCase();
+      document.querySelectorAll("#vlist .vrow").forEach(function (r) {
+        r.style.display = r.textContent.toLowerCase().indexOf(q) > -1 ? "" : "none";
+      });
+    });
+
+    applyCols();
+  });
+})();
+
+</script>
+</body>
+</html>

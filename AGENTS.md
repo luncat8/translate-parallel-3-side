@@ -3,8 +3,8 @@
 Reusable brief for turning any source text (lyrics, poems, prose) into a
 standalone HTML parallel map: source + transliteration + translations, one
 stable `name` per meaning, coloured by part of speech, rendered by the LinguaMap
-engine. The engine lives in `linguamap-template.html`; project data lives in
-`<text>-data.js` (`META` + `DATA`).
+engine. The shared engine lives in `engine/linguamap-template.html`; every song's
+sources, map and result live in `songs/<id>/` and are wired by `song.json`.
 
 ## role
 
@@ -28,8 +28,8 @@ that every mechanical invariant holds.
 	defensive code for impossible edge cases. Clean architecture.
 - Prefer `obj.action(obj.data)` / `obj.data.action()` over
 	`getObj().data().action()`.
-- The built HTML is an artifact. Edit `<text>-data.js` and rebuild; never
-	hand-edit the page.
+- The built HTML is an artifact. Edit `songs/<id>/map/song-data.js` and rebuild;
+	never hand-edit `songs/<id>/result.html`.
 - `plan*.md` is not an implementation log. Keep the final plan as a standalone
 	artifact for a fork or reimplementation: no chat references, no "what was
 	done" history.
@@ -40,13 +40,15 @@ that every mechanical invariant holds.
 ## runtime
 
 - `file://` friendly: classic `<script>` tags, no ES modules, no page-time build.
-- The offline build (`build_linguamap.py` + Node harness) emits one standalone
-	HTML file; the page makes no external requests.
+- The offline build (`tools/song.py build` + `engine/run_validation.js`) emits
+	one standalone HTML file per song; the page makes no external requests.
 - Guard `module.exports` so shared JS also runs under Node (the template does).
 - No internet links. Vendor any library as a local JS file; the engine is
 	dependency-free.
-- Data files are plain classic scripts (`META` + `DATA`). The Node harness reads
+- Map files are plain classic scripts (`META` + `DATA`). The Node harness reads
 	them as text and evaluates them; do not add ESM syntax.
+- Expected translations are plain, line-aligned text: one target line per source
+	line, with the same stanza gaps. They are the gold text behind a starter map.
 
 ## concepts
 
@@ -99,27 +101,40 @@ Do not invent a different structure per project. Swap the data, not the model.
 
 ## files
 
-- `findings-pitfalls-skills.md` — agent notes: good approaches and new pitfalls.
-- `archive/` — plans and worklogs (`0.1.0-plan.md`, `0.1.0-worklog.md`).
+- `engine/` — reusable engine: `linguamap-template.html` (CSS, validator,
+	renderer, demo data), `run_validation.js` (Node gate),
+	`export_translations.js` (word map → expected translation text).
+- `tools/song.py` — folder workflow: `new`, `fixation`, `starter-map`, `export`,
+	`build`, `check`. All paths come from a song's `song.json`.
+- `songs/README.md` — the folder contract and the new-song recipe.
+- `tests/` — layout and validation regression tests.
+- `archive/` — plans and worklogs (`0.1.0-plan.md`, `0.2.0-plan.md`, etc.).
 - `experiments/` — measurement/validation scripts (Node), not loaded by the page;
 	`experiments/logs/` keeps only data useful for comparing regressions.
 - `qa/` — browser QA screenshots.
-- Kit: `linguamap-template.html`, `build_linguamap.py`, `run_validation.js`,
-	`extract_fixation.py`, `<text>-data.js`, `fixation.json`.
-- Built page: `<text>_linguamap.html` (artifact).
 - `0.1.x-draft.md` — human thoughts on goals/design; user prompts may be stored
 	as drafts.
 
-Example subject layout:
+Every song is one self-contained folder:
 
 ```
-0.1.x-draft.md
-archive/0.1.0-plan.md
-archive/0.1.0-worklog.md
-0.1.1-plan.md
-gui.1-plan.md
-0.1.3-draft.md
+songs/<id>/
+├── song.json                         # title + relative paths
+├── sources/
+│   ├── original.*                    # placed source, kept for provenance
+│   ├── source.ja.txt                 # fixation, stanza gaps intact
+│   ├── source.tr.txt                 # line-aligned transliteration
+│   ├── fixation.json                 # nonblank ground-truth lines
+│   ├── expected-translation.en.txt   # line-aligned gold English
+│   └── expected-translation.ru.txt   # line-aligned gold Russian
+├── map/
+│   └── song-data.js                  # canonical META + DATA
+└── result.html                       # generated standalone page (deliverable)
 ```
+
+`mapMode: "word"` marks a hand-segmented map; `"line-starter"` marks a generated
+line-level preview that still needs linguistic segmentation. Do not invent a
+different data model per song — swap the data, not the engine.
 
 ## sandbox
 
@@ -135,18 +150,25 @@ validate, and record.
 
 Per text, in strict order:
 
-1. **Fixation.** Output the source as plain text, stanzas intact. This freezes
-	the meaning and becomes each line's `src`.
-2. **Segmentation.** Split every line into units; give each meaning a `name` and
+0. **Folder.** `python3 tools/song.py new --song <id> --title "<title>" --source
+	<source.tsv> --expected-ru <expected.ru.txt>` creates the manifest, aligned
+	sources, fixation, a starter map and a built page. For an existing folder,
+	keep its `sources/` files and replace only its map.
+1. **Fixation.** `sources/source.ja.txt` is the plain source with stanzas intact;
+	`python3 tools/song.py fixation --song <id>` freezes its nonblank lines into
+	`fixation.json`. Every line's `src` must match one of those lines.
+2. **Expected translations.** Write line-aligned `expected-translation.en.txt`
+	and `expected-translation.ru.txt`; blank stanza lines must match the source.
+	`python3 tools/song.py export --song <id>` derives these files from a finished
+	word-level map instead.
+3. **Segmentation.** Split every line into units; give each meaning a `name` and
 	`pos`. Build a glossary first for recurring items (titles, names, refrain
 	words). Repeated meaning ⇒ same `name`, forever.
-3. **Translation.** Fill the transliteration column (mechanical mirror) and the
-	free-order target columns (natural order, natural punctuation).
-4. **Data assembly.** Write the data file in the canonical model. Add `ord` arrays
-	for target lines whose natural order differs from the source.
-5. **Build + validate.** `python3 build_linguamap.py --data <text>-data.js
-	--fixation fixation.json --out <out>.html --title "<title>"`; ERROR-level
-	issues fail. Fix data, never the validator.
+4. **Data assembly.** Write `songs/<id>/map/song-data.js` in the canonical model.
+	Add `ord` arrays for target lines whose natural order differs from the source.
+5. **Build + validate.** `python3 tools/song.py build --all` and `python3
+	tools/song.py check --all`; ERROR-level issues fail. Fix data, never the
+	validator. Rebuild after every map edit so `result.html` stays in sync.
 6. **Human pass.** Read the page top to bottom: colours sensible? POS colours
 	correct? refrain lines reuse names? Validation badge = OK?
 
@@ -272,8 +294,9 @@ the code from `META` rather than forcing units into it.
 	another fails validation.
 14. **Colour noise.** Inventing per-line palettes. Colour encodes grammar: same
 	class ⇒ same hue family everywhere, in both themes and print.
-15. **Silent model edits.** Hand-editing the built HTML. Edit `<text>-data.js` and
-	rebuild, or the fix evaporates and validation stops covering it.
+15. **Silent model edits.** Hand-editing `songs/<id>/result.html`. Edit
+	`songs/<id>/map/song-data.js` and rebuild, or the fix evaporates and
+	validation stops covering it.
 16. **Fixation skipped.** "I'll fix the text later" → hallucinated source,
 	useless diffs. Fixation is step 1 and becomes `src`.
 17. **Units array in target order.** `units[]` must stay in source order; the
@@ -305,15 +328,18 @@ Human:
 
 ## reuse and layout
 
-1. Copy the kit: `linguamap-template.html` (engine — CSS, validator, renderer,
-	demo data), `build_linguamap.py`, `run_validation.js`, and optionally
-	`extract_fixation.py`. Engine code never changes.
-2. Fixate the source (workflow step 1) by hand or with `extract_fixation.py`.
-	Keep a `fixation.json` line list for the harness cross-check.
-3. Write `<text>-data.js`: `META` (title, columns, `columnTitles`, POS labels,
+1. Keep the kit in `engine/`; engine code never changes for a new song. Add a
+	new `songs/<id>/` folder with `song.json`, `sources/`, `map/` and
+	`result.html`, or let `tools/song.py new` scaffold it.
+2. Fixate the source into `sources/source.ja.txt` and regenerate
+	`sources/fixation.json` with `tools/song.py fixation --song <id>`.
+3. Provide line-aligned expected translations, then replace the generated starter
+	map with `map/song-data.js`: `META` (title, columns, `columnTitles`, POS labels,
 	optional `trMirror`) + `DATA` (title/section/gap/line blocks). The template's
 	embedded demo covers every POS colour.
-4. Build and gate: the Node harness must report `errors: 0` before shipping.
+4. Build and gate: `tools/song.py build --all` must report `errors: 0`;
+	`tools/song.py check --all` also verifies source/translation alignment and
+	that every `result.html` matches its map.
 5. Browser QA: validation badge OK; hover/pin sync; plain mode `[= source OK]`;
 	vocabulary index complete; dark theme, narrow viewport, print readable. Keep
 	screenshots in `qa/`.

@@ -1,5 +1,5 @@
 // LinguaMap build-time validation harness (Node).
-// Usage: node run_validation.js <built-or-template.html> <song-data.js> <fixation.json>
+// Usage: node engine/run_validation.js <songs/<id>/result.html> <map/song-data.js> <sources/fixation.json>
 //
 // Checks, in order:
 //  A. ground truth — every line block's src equals the extracted fixation line

@@ -1,0 +1,23 @@
+{
+	"id": "jumping-girl",
+	"title": "Jumping girl",
+	"pageTitle": "Jumping girl — LinguaMap",
+	"sourceLanguage": "ja",
+	"sourceFormat": "three-block text",
+	"columns": [
+		"ru",
+		"en",
+		"jp",
+		"tr"
+	],
+	"source": "sources/source.ja.txt",
+	"transliteration": "sources/source.tr.txt",
+	"fixation": "sources/fixation.json",
+	"map": "map/song-data.js",
+	"result": "result.html",
+	"mapMode": "word",
+	"expectedTranslations": {
+		"en": "sources/expected-translation.en.txt",
+		"ru": "sources/expected-translation.ru.txt"
+	}
+}
