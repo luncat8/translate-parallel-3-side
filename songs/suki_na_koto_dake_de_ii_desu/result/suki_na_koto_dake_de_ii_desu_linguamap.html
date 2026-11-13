@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>すきなことだけでいいです — LinguaMap</title>
+<style>
+/* ============================================================
+   LinguaMap engine styles — reusable parallel-text engine
+   Colour = part of speech (based on the source language).
+   Same class -> same colour family, in every sentence,
+   in every language column, in light and dark themes.
+   ============================================================ */
+
+:root{
+  --bg:#faf7f2; --card:#ffffff; --card2:#f6f1e7; --ink:#1f1c17;
+  --muted:#8a8578; --line:#e8e4dc; --btn:#ffffff; --btnline:#d8d2c4;
+  --hlbg:#ffd66b; --hlfg:#1f1c17;
+  /* POS palette (light) */
+  --pos-n:#1a5fc4;      /* noun            : blue            */
+  --pos-npr:#3240a8;    /* proper noun     : indigo (blue)   */
+  --pos-v:#c22b35;      /* verb            : red             */
+  --pos-adj:#1e7c34;    /* i-adjective     : green           */
+  --pos-adjna:#647c11;  /* na-adjective    : olive (green)   */
+  --pos-adv:#7c2cae;    /* adverb          : purple          */
+  --pos-pron:#0a7a80;   /* pronoun         : teal            */
+  --pos-conj:#bc5a10;   /* conjunction     : orange          */
+  --pos-interj:#b13272; /* interjection    : magenta         */
+  --pos-q:#93700a;      /* question word   : amber           */
+  --pos-part:#77705f;   /* particle        : warm gray       */
+}
+html[data-theme="dark"]{
+  --bg:#15171d; --card:#1d2027; --card2:#232733; --ink:#e9e6df;
+  --muted:#99a1af; --line:#2b303c; --btn:#232733; --btnline:#3a4150;
+  --hlbg:#a87f1e; --hlfg:#14161c;
+  --pos-n:#7fb2f0; --pos-npr:#94a2f0; --pos-v:#f28b8b; --pos-adj:#82d18d;
+  --pos-adjna:#c6d46e; --pos-adv:#cb9ee0; --pos-pron:#6fcbcd; --pos-conj:#f0a763;
+  --pos-interj:#f099c4; --pos-q:#e6c35f; --pos-part:#aab2bc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+     font:15.5px/1.6 "Segoe UI","Hiragino Kaku Gothic ProN","Hiragino Sans",
+     "Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;}
+.wrap{max-width:1300px;margin:0 auto;padding:0 20px}
+
+/* ---------------- header ---------------- */
+header{padding-top:26px;text-align:center}
+header h1{font-size:clamp(24px,3.6vw,38px);margin:0 0 6px;font-weight:700;letter-spacing:.02em}
+header h1 .unit{font-weight:700}
+header .subtitle{color:var(--muted);margin:2px 0;font-size:15px}
+header .credit{color:var(--muted);font-size:12.5px;margin:10px 0 12px}
+.controls{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin:6px 0 4px}
+.controls button{border:1px solid var(--btnline);background:var(--btn);border-radius:999px;
+  padding:7px 16px;font-size:13.5px;cursor:pointer;color:inherit}
+.controls button:hover{filter:brightness(.97)}
+.controls button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.controls label{font-size:13px;color:var(--muted);display:inline-flex;gap:5px;align-items:center;cursor:pointer}
+.controls .sep{width:1px;height:22px;background:var(--btnline)}
+#stats{color:var(--muted);font-size:12.5px;margin:2px 0 8px}
+.hint{color:var(--muted);font-size:12.5px;margin:6px auto 14px;max-width:900px}
+
+/* ---------------- legend ---------------- */
+.legend{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:4px 8px;margin:4px 0 10px}
+.legend .lg{color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.legend .cap{width:100%;text-align:center;color:var(--muted);font-size:12px;margin:0 0 2px}
+.chip{display:inline-block;font-size:11.5px;font-weight:600;padding:2.5px 11px;border-radius:999px;
+  border:1px solid transparent;cursor:pointer;user-select:none}
+.chip .cnt{opacity:.65;font-weight:400;font-size:10px}
+.chip.active{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink) inset}
+
+/* ---------------- POS colour classes ---------------- */
+.pos-n      {--c:var(--pos-n)}
+.pos-npr    {--c:var(--pos-npr)}
+.pos-v      {--c:var(--pos-v)}
+.pos-adj    {--c:var(--pos-adj)}
+.pos-adjna  {--c:var(--pos-adjna)}
+.pos-adv    {--c:var(--pos-adv)}
+.pos-pron   {--c:var(--pos-pron)}
+.pos-conj   {--c:var(--pos-conj)}
+.pos-interj {--c:var(--pos-interj)}
+.pos-q      {--c:var(--pos-q)}
+.pos-part   {--c:var(--pos-part)}
+.chip.pos-n, .chip.pos-npr, .chip.pos-v, .chip.pos-adj, .chip.pos-adjna,
+.chip.pos-adv, .chip.pos-pron, .chip.pos-conj, .chip.pos-interj,
+.chip.pos-q, .chip.pos-part{
+  color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent)}
+@supports not (background:color-mix(in srgb,red,blue)){
+  .chip.pos-n,.chip.pos-npr,.chip.pos-v,.chip.pos-adj,.chip.pos-adjna,
+  .chip.pos-adv,.chip.pos-pron,.chip.pos-conj,.chip.pos-interj,
+  .chip.pos-q,.chip.pos-part{background:rgba(128,128,128,.14)}}
+
+/* ---------------- mapped units ---------------- */
+.unit{color:var(--c);border-radius:3px;padding:0 1px;margin:0 .5px;cursor:pointer;
+  transition:opacity .15s}
+.unit:hover,.unit.sync{background:var(--hlbg);color:var(--hlfg)!important;font-weight:600;
+  box-shadow:0 0 0 1px var(--hlbg)}
+body.dimming #lines .unit:not(.sync){opacity:.16}
+body.dimming header .unit:not(.sync){opacity:.16}
+body.soloing #lines .unit:not(.solo){opacity:.16}
+body.soloing header .unit:not(.solo){opacity:.16}
+body.plain .unit{color:inherit!important;background:none!important;box-shadow:none!important;
+  font-weight:inherit!important;opacity:1!important;cursor:text}
+
+/* ---------------- plain-text panel (text fixation) ---------------- */
+#plain{margin:0 0 16px}
+#plain summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--muted)}
+#plain pre{white-space:pre-wrap;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:14px 18px;font-family:inherit;font-size:14.5px;
+  line-height:1.95;margin:10px 0 0}
+#plain .ok{color:var(--pos-adj);font-size:11px;margin-left:8px}
+
+/* ---------------- main grid ---------------- */
+#lines{background:var(--card);border:1px solid var(--line);border-radius:16px;
+  box-shadow:0 6px 24px rgba(0,0,0,.05);padding:4px 0;margin-bottom:8px;
+  display:grid;grid-template-columns:2.4rem repeat(var(--cols,4),minmax(0,1fr));gap:0 18px;
+  align-items:baseline}
+.line{display:contents}
+.lineno{color:var(--muted);font-size:11px;text-align:right;padding:10px 0 6px;
+  font-family:ui-monospace,Consolas,monospace;opacity:.8}
+.cell{padding:9px 0 8px;border-bottom:1px solid var(--line);min-width:0;overflow-wrap:break-word}
+.line:last-of-type .cell{border-bottom:none}
+.cell.z{background:var(--card2)}
+.cell.src{font-weight:500}
+.cell.tr{color:var(--muted);font-size:13.5px}
+.hcell{padding:10px 0 9px;font-weight:600;letter-spacing:.06em;font-size:12.5px;
+  color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--line)}
+.hcell .mirror{opacity:.6;font-weight:400;text-transform:none;letter-spacing:0}
+.gapcell{grid-column:1/-1;height:14px;border-bottom:none}
+.sectioncell{grid-column:1/-1;font-size:12px;font-weight:700;color:var(--muted);
+  letter-spacing:.1em;text-transform:uppercase;padding:14px 0 4px;border-bottom:none}
+.titlecell{font-size:clamp(17px,2vw,22px);padding:16px 0 12px}
+.titlecell.src{font-weight:600}
+
+/* ---------------- panels (vocab / validation) ---------------- */
+.panel{margin:18px 0 26px}
+.panel summary{cursor:pointer;font-weight:600;font-size:15px}
+.panel .pnote{color:var(--muted);font-size:12.5px;margin:2px 0 10px}
+#valBadge{display:inline-block;min-width:20px;text-align:center;border-radius:999px;
+  padding:0 8px;font-size:12px;font-weight:700;margin-left:6px}
+#valBadge.ok{background:color-mix(in srgb,var(--pos-adj) 20%,transparent);color:var(--pos-adj)}
+#valBadge.bad{background:color-mix(in srgb,var(--pos-v) 20%,transparent);color:var(--pos-v)}
+.valitem{font:12.5px/1.5 ui-monospace,Consolas,monospace;padding:4px 10px;border-left:3px solid var(--pos-q);
+  background:var(--card);margin:4px 0;border-radius:0 6px 6px 0;white-space:pre-wrap}
+.valitem.err{border-left-color:var(--pos-v)}
+.valitem.ok{border-left-color:var(--pos-adj)}
+#vsearch{margin:0 0 10px;padding:8px 14px;border:1px solid var(--line);border-radius:999px;
+  width:min(360px,100%);font-size:14px;outline:none;background:var(--card);color:inherit}
+.vrow{display:grid;grid-template-columns:96px 150px repeat(var(--cols,4),minmax(0,1fr)) 42px;gap:12px;
+  padding:6px 12px;border-bottom:1px solid var(--line);font-size:13.5px;cursor:pointer;
+  align-items:baseline;background:var(--card)}
+.vrow:hover{filter:brightness(.985)}
+.vrow.active{background:var(--hlbg);color:var(--hlfg)}
+.vrow .nm{color:var(--muted);font-family:ui-monospace,Consolas,monospace;font-size:12px;
+  word-break:break-all}
+.vrow .vtr{color:var(--muted);font-size:13px}
+.vrow .vct{color:var(--muted);font-size:11.5px;text-align:right}
+.vgroup{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.08em;
+  text-transform:uppercase;padding:12px 12px 2px}
+
+/* ---------------- footer ---------------- */
+footer{max-width:1300px;margin:0 auto;padding:14px 20px 40px;color:var(--muted);
+  font-size:12px;text-align:center}
+footer code{font-size:11px}
+
+/* ---------------- responsive ---------------- */
+@media(max-width:860px){
+  #lines{display:block;padding:2px 12px 8px}
+  .line{display:grid;grid-template-columns:1fr;gap:0;padding:6px 0}
+  .lineno{display:none}
+  .hcell{display:none}
+  .cell{border-bottom:1px dashed var(--line);padding:7px 0 6px}
+  .cell.z{background:none}
+  .cell{font-size:14px;line-height:1.95}
+  .cell.lang-tr{font-size:13px}
+  .cell::before{content:attr(data-full);display:inline-block;font-size:9.5px;font-weight:700;
+    color:var(--bg);background:var(--muted);border-radius:4px;padding:1px 6px;margin-right:8px;
+    position:relative;top:-2px;letter-spacing:.08em}
+  .gapcell,.sectioncell{padding:8px 0 2px}
+  .vrow{grid-template-columns:96px 1fr;row-gap:1px}
+  .vrow .vsrc,.vrow .vtr,.vrow .vcell{grid-column:2}
+}
+@media(max-width:560px){
+  .controls{gap:6px}
+  .controls label{display:none}
+}
+
+/* ---------------- print ---------------- */
+@media print{
+  .controls,#plain,.panel,footer,#stats{display:none!important}
+  body{background:#fff;color:#000;font-size:11px}
+  #lines{box-shadow:none;border:none;grid-template-columns:2.4rem repeat(var(--cols,4),minmax(0,1fr))!important}
+  .cell{border-bottom:1px solid #ddd;padding:5px 0}
+  .unit{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .line{break-inside:avoid}
+}
+
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <h1 id="appTitle"></h1>
+  <p class="subtitle" id="appSub"></p>
+  <p class="credit" id="appCredit"></p>
+
+  <div class="controls">
+    <span id="colbox"></span>
+    <span class="sep"></span>
+    <button id="btnPlain" type="button">Plain text</button>
+    <button id="btnVocab" type="button">Vocabulary</button>
+    <button id="btnVal" type="button">Validation&nbsp;<span id="valBadge" class="ok">OK</span></button>
+    <button id="btnTheme" type="button">Dark</button>
+  </div>
+
+  <div class="legend" id="legend"></div>
+  <p class="hint">Hover or tap any word: the same meaning lights up in every column. Click to pin, Esc to release. Click a legend chip to focus one part of speech; use the checkboxes to show or hide languages.</p>
+  <p id="stats"></p>
+
+  <details id="plain">
+    <summary>Step 1 — Text fixation: source text reconstructed from the mapped data</summary>
+    <pre id="plainPre"></pre>
+  </details>
+</header>
+
+<main class="wrap">
+  <div id="lines"></div>
+
+  <details id="vocabPanel" class="panel">
+    <summary>Vocabulary index — every <code>name</code>, grouped by part of speech</summary>
+    <p class="pnote">Auto-generated from the data table: every column per meaning, with occurrence counts. Click a row to pin it in the text.</p>
+    <input id="vsearch" type="text" placeholder="Filter… (meaning, romaji, translation)">
+    <div id="vlist"></div>
+  </details>
+
+  <details id="valPanel" class="panel">
+    <summary>Validation — data invariants</summary>
+    <p class="pnote">Checks: the source column reconstructs the fixation text character-for-character · the transliteration column mirrors it structurally · target order arrays are exact permutations · one POS per name · every column filled.</p>
+    <div id="valList"></div>
+  </details>
+</main>
+
+<footer class="wrap">
+  Built with the LinguaMap template — swap the META + DATA block to reuse for any text (workflow &amp; pitfalls: AGENTS.md).
+  Identical <code>name</code> = identical meaning · colour = part of speech · transliteration mirrors the source word order.
+</footer>
+
+<script>
+/* ============================================================
+   LinguaMap validator — pure function, no DOM.
+   Runs in the browser (Validation panel) and in the Node build
+   harness (build fails on ERROR-level issues).
+
+   Encoding of the hard invariants from the AGENTS.md spec:
+   I1  same name  => same meaning, present in EVERY language column
+   I2  source column (META.sourceKey) = fixation text, character for
+       character (src check)
+   I3  transliteration column (META.translitKey) mirrors source order —
+       guaranteed by the data model (both live in the same unit object);
+       verified per line
+       if an explicit trOrd is given
+   I4  en/ru free order — but their ord arrays must be permutations
+       of the unit names (no drops, no unknown names)
+   I5  one POS per name, consistent across the whole file
+   I6  POS codes must exist in META.posLabels
+   ============================================================ */
+"use strict";
+
+function validateData(META, DATA) {
+  var issues = [];
+  var stats = { lines: 0, units: 0, uniqueNames: 0, spans: 0 };
+  var posSet = Object.keys(META.posLabels || {});
+  var cols = META.columns || [];
+  var srcKey = META.sourceKey || "jp";
+  var trKey = META.translitKey || "tr";
+  var nameInfo = {};   // name -> {pos, src, count}
+
+  function err(msg) { issues.push({ sev: "err", msg: msg }); }
+  function warn(msg) { issues.push({ sev: "warn", msg: msg }); }
+
+  if (!cols.length) err("META.columns is empty");
+  if (!posSet.length) err("META.posLabels is empty");
+
+  DATA.forEach(function (block, bi) {
+    if (block.type !== "line") return;
+    stats.lines += 1;
+    var no = block.no || bi + 1;
+    var names = [];
+
+    if (!block.units || !block.units.length) {
+      err("L" + no + ": line has no units");
+      return;
+    }
+
+    block.units.forEach(function (u) {
+      stats.units += 1;
+      if (!u.name || typeof u.name !== "string") {
+        err("L" + no + ": unit without a name");
+        return;
+      }
+      names.push(u.name);
+      cols.forEach(function (lang) {
+        var t = u[lang];
+        if (typeof t !== "string" || !t.trim()) {
+          err("L" + no + " [" + u.name + "]: empty text for column \"" + lang + "\"");
+        }
+      });
+      if (posSet.indexOf(u.pos) === -1) {
+        err("L" + no + " [" + u.name + "]: unknown POS code \"" + u.pos + "\"");
+      }
+      var prev = nameInfo[u.name];
+      if (prev) {
+        prev.count += 1;
+        if (prev.pos !== u.pos) {
+          err("name \"" + u.name + "\": POS conflict (" + prev.pos + " vs " + u.pos + ")");
+        }
+        if (prev.src !== u[srcKey]) {
+          warn("name \"" + u.name + "\": " + srcKey + " surface differs between occurrences (\"" +
+               prev.src + "\" vs \"" + u[srcKey] + "\")");
+        }
+      } else {
+        nameInfo[u.name] = { pos: u.pos, src: u[srcKey], count: 1 };
+        stats.uniqueNames += 1;
+      }
+    });
+
+    /* I2: source column concat vs fixation source */
+    if (block.src) {
+      var concat = block.units.map(function (u) { return u[srcKey] || ""; }).join("");
+      if (concat !== block.src) {
+        err("L" + no + ": " + srcKey + " cells do not reconstruct the source text\n" +
+            "   got:  " + concat + "\n   want: " + block.src);
+      }
+    }
+
+    /* duplicate name inside one line (legit for repeated words -> warn) */
+    var seen = {};
+    names.forEach(function (n) {
+      if (seen[n]) warn("L" + no + ": name \"" + n + "\" occurs twice in one line");
+      seen[n] = 1;
+    });
+
+    /* I4: ord arrays must be permutations of the line's unit names */
+    cols.forEach(function (lang) {
+      var ord = block.ord && block.ord[lang];
+      if (!ord) return;
+      ord.forEach(function (n) {
+        if (names.indexOf(n) === -1) {
+          err("L" + no + ": ord." + lang + " contains unknown name \"" + n + "\"");
+        }
+      });
+      var a = ord.slice().sort().join("\u0001");
+      var b = names.slice().sort().join("\u0001");
+      if (a !== b) {
+        err("L" + no + ": ord." + lang + " is not a permutation of the line's names");
+      }
+    });
+
+    /* I3: explicit tr mirror check, if the author chose to spell it out */
+    if (block.trOrd) {
+      var jpSeq = names.join("\u0001");
+      if (block.trOrd.join("\u0001") !== jpSeq) {
+        err("L" + no + ": trOrd does not mirror the " + srcKey + " order (I3 violated)");
+      }
+    }
+  });
+
+  stats.spans = stats.units;
+  var errs = issues.filter(function (i) { return i.sev === "err"; }).length;
+  var warns = issues.length - errs;
+  return { issues: issues, stats: stats, errors: errs, warnings: warns };
+}
+
+if (typeof module !== "undefined") module.exports = { validateData: validateData };
+
+</script>
+<script id="data">
+"use strict";
+
+/* すきなことだけでいいです — LinguaMap map
+   Source:   sources/lyrics.txt (jp / romaji / en table)
+   Fixation: sources/fixation.json (79 lines, stanzas intact)
+   Build:    python3 kit/build_song.py suki_na_koto_dake_de_ii_desu
+
+   units[] stay in SOURCE (jp) word order; en/ru reorder via ord.
+   tr mirrors the source mechanically, so tr cells follow jp order and
+   punctuation. One meaning = one name for the whole song. */
+
+const META = {
+  title: "すきなことだけでいいです — LinguaMap",
+  subtitle: "すきなことだけでいいです · parallel word map: 日本語 · Romaji · English · Русский",
+  credit: "Mapped with the LinguaMap workflow (AGENTS.md): one meaning = one name across all columns · colour = part of speech (based on the Japanese) · romaji mirrors the Japanese word order. Chorus and refrain lines deliberately reuse the same names; the validator reports the resulting duplicate-occurrence warnings as intended.",
+  columns: ["en", "ru", "jp", "tr"],
+  columnTitles: { en: "English", ru: "Русский", jp: "日本語", tr: "Romaji" },
+  sourceKey: "jp",
+  translitKey: "tr",
+  trMirror: true,
+  posLabels: {
+    n: "noun", npr: "proper noun", v: "verb", adj: "i-adj", adjna: "na-adj",
+    adv: "adverb", pron: "pronoun", conj: "conjunction",
+    interj: "interjection", part: "particle", q: "question word"
+  },
+  posOrder: ["n", "npr", "v", "adj", "adjna", "adv", "pron", "conj", "interj", "part", "q"]
+};
+
+const DATA = [
+  { type: "section", label: "Verse 1 — weekdays vs. weekend" },
+
+  /* no.1 — 平日は嫌　休みが好き */
+  { type: "line", src: "平日は嫌　休みが好き", units: [
+    { name: "weekday", pos: "n", jp: "平日は", tr: "heijitsu wa", en: "weekdays", ru: "будни" },
+    { name: "hate", pos: "adj", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "holiday", pos: "n", jp: "休みが", tr: "yasumi ga", en: "the weekend", ru: "выходной" },
+    { name: "like", pos: "v", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.2 — 仕事は嫌　二度寝が好き */
+  { type: "line", src: "仕事は嫌　二度寝が好き", units: [
+    { name: "work", pos: "n", jp: "仕事は", tr: "shigoto wa", en: "work", ru: "работу" },
+    { name: "hate", pos: "adj", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "second_sleep", pos: "n", jp: "二度寝が", tr: "nidone ga", en: "going back to sleep", ru: "поспать ещё" },
+    { name: "like", pos: "v", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.3 — 怠けたまま暮らすの無理 */
+  { type: "line", src: "怠けたまま暮らすの無理", units: [
+    { name: "lazy", pos: "adj", jp: "怠けたまま", tr: "namaketa mama", en: "living lazily", ru: "жить лениво" },
+    { name: "living", pos: "v", jp: "暮らすの", tr: "kurasu no", en: "", ru: "" },
+    { name: "impossible", pos: "adjna", jp: "無理", tr: "muri", en: "is impossible", ru: "невозможно" }
+  ]
+  },
+
+  /* no.4 — 遠のいていく意識 */
+  { type: "line", src: "遠のいていく意識", units: [
+    { name: "distant", pos: "v", jp: "遠のいていく", tr: "toonoite iku", en: "recedes", ru: "уходит" },
+    { name: "consciousness", pos: "n", jp: "意識", tr: "ishiki", en: "my consciousness", ru: "сознание" }
+  ]
+  },
+
+  { type: "section", label: "Verse 2 — vegetables and sweets" },
+
+  /* no.5 — 野菜は嫌　ハンバーグが好き */
+  { type: "line", src: "野菜は嫌　ハンバーグが好き", units: [
+    { name: "vegetable", pos: "n", jp: "野菜は", tr: "yasai wa", en: "vegetables", ru: "овощи" },
+    { name: "hate", pos: "adj", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "hamburger", pos: "n", jp: "ハンバーグが", tr: "hanbaagu ga", en: "hamburgers", ru: "бургеры" },
+    { name: "like", pos: "v", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.6 — 麦茶は嫌　ジュースが好き */
+  { type: "line", src: "麦茶は嫌　ジュースが好き", units: [
+    { name: "barley_tea", pos: "n", jp: "麦茶は", tr: "mugicha wa", en: "barley tea", ru: "ячменный чай" },
+    { name: "hate", pos: "adj", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "juice", pos: "n", jp: "ジュースが", tr: "juusu ga", en: "juice", ru: "сок" },
+    { name: "like", pos: "v", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.7 — 甘えんな　でも甘味は好き */
+  { type: "line", src: "甘えんな　でも甘味は好き", units: [
+    { name: "dont_be_sweet", pos: "v", jp: "甘えんな　", tr: "amaenna ", en: "don't be sweet on me,", ru: "не будь со мной милым," },
+    { name: "but", pos: "conj", jp: "でも", tr: "demo", en: "but", ru: "но" },
+    { name: "sweetness", pos: "n", jp: "甘味は", tr: "kanmi wa", en: "sweet things", ru: "сладкое" },
+    { name: "like", pos: "v", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ], ord: { en: ["dont_be_sweet", "sweetness", "but", "like"], ru: ["dont_be_sweet", "sweetness", "but", "like"] }
+  },
+
+  /* no.8 — 生前の１ページ */
+  { type: "line", src: "生前の１ページ", units: [
+    { name: "lifetime", pos: "n", jp: "生前の", tr: "seizen no", en: "from my life", ru: "из моей жизни" },
+    { name: "one_page", pos: "n", jp: "１ページ", tr: "ichi-peeji", en: "the first page", ru: "первая страница" }
+  ]
+  },
+
+  { type: "section", label: "Pre-chorus — staring only at what I like" },
+
+  /* no.9 — 好きなことだけ見つめて */
+  { type: "line", src: "好きなことだけ見つめて", units: [
+    { name: "i_like", pos: "n", jp: "好きなこと", tr: "suki na koto", en: "things I like,", ru: "что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "stare_at", pos: "v", jp: "見つめて", tr: "mitsumete", en: "I look at", ru: "смотрю на" }
+  ], ord: { en: ["only", "i_like", "stare_at"], ru: ["only", "i_like", "stare_at"] }
+  },
+
+  /* no.10 — だんだん　視力が弱くなる */
+  { type: "line", src: "だんだん　視力が弱くなる", units: [
+    { name: "little_by_little", pos: "adv", jp: "だんだん　", tr: "dandan ", en: "gradually", ru: "постепенно" },
+    { name: "eyesight", pos: "n", jp: "視力が", tr: "shiryoku ga", en: "my eyesight", ru: "зрение" },
+    { name: "weaken", pos: "v", jp: "弱くなる", tr: "yowaku naru", en: "grows weaker", ru: "слабеет" }
+  ]
+  },
+
+  /* no.11 — 好きなことで満たされて */
+  { type: "line", src: "好きなことで満たされて", units: [
+    { name: "i_like", pos: "n", jp: "好きなことで", tr: "suki na koto de", en: "with things I like", ru: "тем, что нравится" },
+    { name: "filling", pos: "v", jp: "満たされて", tr: "mitasarete", en: "I am filled", ru: "" }
+  ], ord: { en: ["filling", "i_like"], ru: ["filling", "i_like"] }
+  },
+
+  /* no.12 — だんだん　頭が悪くなる */
+  { type: "line", src: "だんだん　頭が悪くなる", units: [
+    { name: "little_by_little", pos: "adv", jp: "だんだん　", tr: "dandan ", en: "gradually", ru: "постепенно" },
+    { name: "head", pos: "n", jp: "頭が", tr: "atama ga", en: "my mind", ru: "голова" },
+    { name: "dull", pos: "v", jp: "悪くなる", tr: "waruku naru", en: "grows duller", ru: "тупеет" }
+  ]
+  },
+
+  { type: "section", label: "Chorus — only what I like" },
+
+  /* no.13 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.14 — みんな　好きなことが好きなんです */
+  { type: "line", src: "みんな　好きなことが好きなんです", units: [
+    { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
+    { name: "i_like", pos: "n", jp: "好きなことが", tr: "suki na koto ga", en: "the things they like", ru: "то, что нравится," },
+    { name: "everyone_loves", pos: "v", jp: "好きなんです", tr: "suki nan desu", en: "they love", ru: "они любят" }
+  ]
+  },
+
+  /* no.15 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.16 — みんな　嫌なことは嫌なんです */
+  { type: "line", src: "みんな　嫌なことは嫌なんです", units: [
+    { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
+    { name: "dislike", pos: "n", jp: "嫌なことは", tr: "iya na koto wa", en: "the things they dislike", ru: "то, что не нравится," },
+    { name: "everyone_hates", pos: "v", jp: "嫌なんです", tr: "iya nan desu", en: "they hate", ru: "они ненавидят" }
+  ]
+  },
+
+  /* no.17 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.18 — ほんと　すきなことだけでいいです */
+  { type: "line", src: "ほんと　すきなことだけでいいです", units: [
+    { name: "really", pos: "adv", jp: "ほんと　", tr: "honto ", en: "really", ru: "правда" },
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["really", "only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.19 — 全人類が好きなことやったら */
+  { type: "line", src: "全人類が好きなことやったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類が", tr: "zenjinrui ga", en: "if all of humanity", ru: "если всё человечество" },
+    { name: "i_like", pos: "n", jp: "好きなこと", tr: "suki na koto", en: "did the things they like,", ru: "сделало то, что нравится," },
+    { name: "if", pos: "conj", jp: "やったら", tr: "yattara", en: "", ru: "если" }
+  ]
+  },
+
+  /* no.20 — 世界は滅亡するけど */
+  { type: "line", src: "世界は滅亡するけど", units: [
+    { name: "world", pos: "n", jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
+    { name: "perish", pos: "v", jp: "滅亡する", tr: "metsubou suru", en: "would turn to ruin", ru: "погиб бы, но" },
+    { name: "though", pos: "conj", jp: "けど", tr: "kedo", en: "", ru: "но" }
+  ]
+  },
+
+  { type: "section", label: "Verse 3 — you and someone else" },
+
+  /* no.21 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.22 — 君のことが　ほんとに好きなんです */
+  { type: "line", src: "君のことが　ほんとに好きなんです", units: [
+    { name: "about_you", pos: "n", jp: "君のことが　", tr: "kimi no koto ga ", en: "about you", ru: "в тебе" },
+    { name: "truly", pos: "adv", jp: "ほんとに", tr: "honto ni", en: "really", ru: "по-настоящему" },
+    { name: "everyone_loves", pos: "v", jp: "好きなんです", tr: "suki nan desu", en: "I like", ru: "люблю" }
+  ]
+  },
+
+  /* no.23 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.24 — 君は違う誰かが好きなんです */
+  { type: "line", src: "君は違う誰かが好きなんです", units: [
+    { name: "you", pos: "pron", jp: "君は", tr: "kimi wa", en: "you", ru: "ты" },
+    { name: "another", pos: "n", jp: "違う誰かが", tr: "chigau dareka ga", en: "someone else", ru: "кто-то другой" },
+    { name: "you_like", pos: "v", jp: "好きなんです", tr: "suki nan desu", en: "you like", ru: "тебе нравится" }
+  ]
+  },
+
+  /* no.25 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  { type: "section", label: "Bridge — if everyone did what they like" },
+
+  /* no.26 — やっぱ　それだけじゃ難しいです */
+  { type: "line", src: "やっぱ　それだけじゃ難しいです", units: [
+    { name: "after_all", pos: "adv", jp: "やっぱ　", tr: "yappa ", en: "after all", ru: "в конце концов" },
+    { name: "only_that", pos: "adv", jp: "それだけじゃ", tr: "sore dake ja", en: "only that", ru: "только это" },
+    { name: "hard", pos: "adj", jp: "難しいです", tr: "muzukashii desu", en: "is difficult", ru: "сложно" }
+  ]
+  },
+
+  /* no.27 — 全人類が幸せになったら */
+  { type: "line", src: "全人類が幸せになったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類が", tr: "zenjinrui ga", en: "if all of humanity", ru: "если всё человечество" },
+    { name: "happy", pos: "adj", jp: "幸せに", tr: "shiawase ni", en: "became happy,", ru: "стало счастливым," },
+    { name: "if", pos: "conj", jp: "なったら", tr: "nattara", en: "", ru: "если" }
+  ]
+  },
+
+  /* no.28 — 宇宙が迷惑するから */
+  { type: "line", src: "宇宙が迷惑するから", units: [
+    { name: "universe", pos: "n", jp: "宇宙が", tr: "uchuu ga", en: "the universe", ru: "вселенная" },
+    { name: "trouble", pos: "v", jp: "迷惑する", tr: "meiwaku suru", en: "would be troubled", ru: "возмутилась бы, потому что" },
+    { name: "because", pos: "conj", jp: "から", tr: "kara", en: "", ru: "потому что" }
+  ]
+  },
+
+  { type: "section", label: "Verse 4 — tastes" },
+
+  /* no.29 — 天使は嫌　悪魔が好き */
+  { type: "line", src: "天使は嫌　悪魔が好き", units: [
+    { name: "angel", pos: "n", jp: "天使は", tr: "tenshi wa", en: "angels", ru: "ангелы" },
+    { name: "hate", pos: "adj", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "demon", pos: "n", jp: "悪魔が", tr: "akuma ga", en: "demons", ru: "демоны" },
+    { name: "like", pos: "v", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.30 — 天国は嫌　地獄が好き */
+  { type: "line", src: "天国は嫌　地獄が好き", units: [
+    { name: "heaven", pos: "n", jp: "天国は", tr: "tengoku wa", en: "heaven", ru: "рай" },
+    { name: "hate", pos: "adj", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "hell", pos: "n", jp: "地獄が", tr: "jigoku ga", en: "hell", ru: "ад" },
+    { name: "like", pos: "v", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.31 — あべこべだった　君の趣味 */
+  { type: "line", src: "あべこべだった　君の趣味", units: [
+    { name: "upside_down", pos: "v", jp: "あべこべだった　", tr: "abekobe datta ", en: "were the opposite", ru: "были наоборот" },
+    { name: "your_taste", pos: "n", jp: "君の趣味", tr: "kimi no shumi", en: "your tastes", ru: "твои вкусы" }
+  ]
+  },
+
+  /* no.32 — 人それぞれのクレイジー */
+  { type: "line", src: "人それぞれのクレイジー", units: [
+    { name: "each_person", pos: "n", jp: "人それぞれの", tr: "hito sorezore no", en: "each person's", ru: "у каждого своё" },
+    { name: "crazy", pos: "n", jp: "クレイジー", tr: "kureijii", en: "crazy", ru: "сумасшествие" }
+  ]
+  },
+
+  { type: "section", label: "Verse 5 — living things, the real, the virtual" },
+
+  /* no.33 — 生物は嫌　機械が好き */
+  { type: "line", src: "生物は嫌　機械が好き", units: [
+    { name: "creature", pos: "n", jp: "生物は", tr: "seibutsu wa", en: "living things", ru: "живое" },
+    { name: "hate", pos: "adj", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "machine", pos: "n", jp: "機械が", tr: "kikai ga", en: "machines", ru: "машины" },
+    { name: "like", pos: "v", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.34 — リアルは嫌　虚像が好き */
+  { type: "line", src: "リアルは嫌　虚像が好き", units: [
+    { name: "real", pos: "adj", jp: "リアルは", tr: "riaru wa", en: "the real", ru: "реальное" },
+    { name: "hate", pos: "adj", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "virtual", pos: "n", jp: "虚像が", tr: "kyozou ga", en: "the virtual", ru: "иллюзию" },
+    { name: "like", pos: "v", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.35 — 偏っていた　君の趣味 */
+  { type: "line", src: "偏っていた　君の趣味", units: [
+    { name: "biased", pos: "v", jp: "偏っていた　", tr: "katayotte ita ", en: "were biased", ru: "были однобоки" },
+    { name: "your_taste", pos: "n", jp: "君の趣味", tr: "kimi no shumi", en: "your tastes", ru: "твои вкусы" }
+  ]
+  },
+
+  /* no.36 — 悪化して思考停止 */
+  { type: "line", src: "悪化して思考停止", units: [
+    { name: "worsening", pos: "v", jp: "悪化して", tr: "akka shite", en: "worsening", ru: "ухудшаясь" },
+    { name: "thinking_stops", pos: "v", jp: "思考停止", tr: "shikouteishi", en: "thinking stops", ru: "мышление останавливается" }
+  ]
+  },
+
+  { type: "section", label: "Pre-chorus 2 — surrounded by likes" },
+
+  /* no.37 — 好きなことに囲まれて */
+  { type: "line", src: "好きなことに囲まれて", units: [
+    { name: "surrounded", pos: "v", jp: "好きなことに囲まれて", tr: "suki na koto ni kakomarete", en: "surrounded by things I like", ru: "окружённый тем, что нравится" }
+  ]
+  },
+
+  /* no.38 — 嫌なことが許せなくなる */
+  { type: "line", src: "嫌なことが許せなくなる", units: [
+    { name: "unforgiving", pos: "v", jp: "嫌なことが許せなくなる", tr: "iya na koto ga yurusenaku naru", en: "I stop forgiving what I dislike", ru: "перестаю прощать то, что не нравится" }
+  ]
+  },
+
+  /* no.39 — 好きなことだけで生きて */
+  { type: "line", src: "好きなことだけで生きて", units: [
+    { name: "living_only", pos: "v", jp: "好きなことだけで生きて", tr: "suki na koto dake de ikite", en: "living only with what I like", ru: "жить только тем, что нравится" }
+  ]
+  },
+
+  /* no.40 — どこかの誰かに恨まれる */
+  { type: "line", src: "どこかの誰かに恨まれる", units: [
+    { name: "resented", pos: "v", jp: "どこかの誰かに恨まれる", tr: "dokoka no dareka ni uramareru", en: "resented by someone, somewhere", ru: "кто-то где-то меня ненавидит" }
+  ]
+  },
+
+  { type: "section", label: "Chorus — only what I like (reprise)" },
+
+  /* no.41 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.42 — みんな　好きなことが好きなんです */
+  { type: "line", src: "みんな　好きなことが好きなんです", units: [
+    { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
+    { name: "i_like", pos: "n", jp: "好きなことが", tr: "suki na koto ga", en: "the things they like", ru: "то, что нравится," },
+    { name: "everyone_loves", pos: "v", jp: "好きなんです", tr: "suki nan desu", en: "they love", ru: "они любят" }
+  ]
+  },
+
+  /* no.43 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.44 — みんな　嫌なことは嫌なんです */
+  { type: "line", src: "みんな　嫌なことは嫌なんです", units: [
+    { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
+    { name: "dislike", pos: "n", jp: "嫌なことは", tr: "iya na koto wa", en: "the things they dislike", ru: "то, что не нравится," },
+    { name: "everyone_hates", pos: "v", jp: "嫌なんです", tr: "iya nan desu", en: "they hate", ru: "они ненавидят" }
+  ]
+  },
+
+  /* no.45 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.46 — ほんと　すきなことだけでいいです */
+  { type: "line", src: "ほんと　すきなことだけでいいです", units: [
+    { name: "really", pos: "adv", jp: "ほんと　", tr: "honto ", en: "really", ru: "правда" },
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["really", "only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.47 — 全人類が好きなことやったら */
+  { type: "line", src: "全人類が好きなことやったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類が", tr: "zenjinrui ga", en: "if all of humanity", ru: "если всё человечество" },
+    { name: "i_like", pos: "n", jp: "好きなこと", tr: "suki na koto", en: "did the things they like,", ru: "сделало то, что нравится," },
+    { name: "if", pos: "conj", jp: "やったら", tr: "yattara", en: "", ru: "если" }
+  ]
+  },
+
+  /* no.48 — 世界は滅亡するけど */
+  { type: "line", src: "世界は滅亡するけど", units: [
+    { name: "world", pos: "n", jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
+    { name: "perish", pos: "v", jp: "滅亡する", tr: "metsubou suru", en: "would turn to ruin", ru: "погиб бы, но" },
+    { name: "though", pos: "conj", jp: "けど", tr: "kedo", en: "", ru: "но" }
+  ]
+  },
+
+  { type: "section", label: "Verse 6 — friends" },
+
+  /* no.49 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.50 — ずっと　仲間と笑っていたいんです */
+  { type: "line", src: "ずっと　仲間と笑っていたいんです", units: [
+    { name: "always", pos: "adv", jp: "ずっと　", tr: "zutto ", en: "all the time", ru: "всё время" },
+    { name: "friends", pos: "n", jp: "仲間と", tr: "nakama to", en: "with my friends", ru: "с друзьями" },
+    { name: "want_smile", pos: "v", jp: "笑っていたいんです", tr: "waratte itai n desu", en: "I want to smile", ru: "хочу улыбаться" }
+  ], ord: { en: ["friends", "always", "want_smile"], ru: ["friends", "always", "want_smile"] }
+  },
+
+  /* no.51 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.52 — だけど　仲間が全然いないんです */
+  { type: "line", src: "だけど　仲間が全然いないんです", units: [
+    { name: "but", pos: "conj", jp: "だけど　", tr: "dakedo ", en: "but", ru: "но" },
+    { name: "friends", pos: "n", jp: "仲間が", tr: "nakama ga", en: "my friends", ru: "друзья" },
+    { name: "not_at_all", pos: "adv", jp: "全然", tr: "zenzen", en: "at all", ru: "совсем" },
+    { name: "have", pos: "v", jp: "いないんです", tr: "inai n desu", en: "are not there", ru: "не рядом" }
+  ]
+  },
+
+  /* no.53 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  { type: "section", label: "Bridge 2 — wishes" },
+
+  /* no.54 — やっぱ　それだけじゃ難しいです */
+  { type: "line", src: "やっぱ　それだけじゃ難しいです", units: [
+    { name: "after_all", pos: "adv", jp: "やっぱ　", tr: "yappa ", en: "after all", ru: "в конце концов" },
+    { name: "only_that", pos: "adv", jp: "それだけじゃ", tr: "sore dake ja", en: "only that", ru: "только это" },
+    { name: "hard", pos: "adj", jp: "難しいです", tr: "muzukashii desu", en: "is difficult", ru: "сложно" }
+  ]
+  },
+
+  /* no.55 — 全人類の願いが叶ったら */
+  { type: "line", src: "全人類の願いが叶ったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類の", tr: "zenjinrui no", en: "if all of humanity's", ru: "если бы все желания человечества" },
+    { name: "wish", pos: "n", jp: "願いが", tr: "negai ga", en: "wishes", ru: "" },
+    { name: "granted", pos: "v", jp: "叶ったら", tr: "kanattara", en: "were granted,", ru: "сбылись," }
+  ]
+  },
+
+  /* no.56 — 地球が爆発するから */
+  { type: "line", src: "地球が爆発するから", units: [
+    { name: "earth", pos: "n", jp: "地球が", tr: "chikyuu ga", en: "the earth", ru: "земля" },
+    { name: "explode", pos: "v", jp: "爆発する", tr: "bakuhatsu suru", en: "would explode", ru: "взорвалась бы, потому что" },
+    { name: "because", pos: "conj", jp: "から", tr: "kara", en: "", ru: "потому что" }
+  ]
+  },
+
+  { type: "section", label: "Outro — the promise and the rain" },
+
+  /* no.57 — 待ち合わせの約束があった */
+  { type: "line", src: "待ち合わせの約束があった", units: [
+    { name: "meeting", pos: "n", jp: "待ち合わせの約束が", tr: "machiawase no yakusoku ga", en: "a promise to meet", ru: "обещание встретиться" },
+    { name: "there_was", pos: "v", jp: "あった", tr: "atta", en: "I had made", ru: "было" }
+  ]
+  },
+
+  /* no.58 — 雨が嫌だから　行かなかった */
+  { type: "line", src: "雨が嫌だから　行かなかった", units: [
+    { name: "rain", pos: "n", jp: "雨が嫌だから　", tr: "ame ga iya dakara ", en: "because I dislike the rain,", ru: "потому что ненавижу дождь," },
+    { name: "not_go", pos: "v", jp: "行かなかった", tr: "ikanakatta", en: "I did not go", ru: "не пошёл" }
+  ]
+  },
+
+  /* no.59 — 出かけてたら　良いことあったかな */
+  { type: "line", src: "出かけてたら　良いことあったかな", units: [
+    { name: "if_went", pos: "v", jp: "出かけてたら　", tr: "dekaketetara ", en: "if I had gone out", ru: "если бы вышел" },
+    { name: "good_thing", pos: "n", jp: "良いこと", tr: "ii koto", en: "something good", ru: "что-то хорошее" },
+    { name: "would_have_happened", pos: "v", jp: "あったかな", tr: "atta kana", en: "would have happened", ru: "случилось бы" }
+  ]
+  },
+
+  /* no.60 — 今際の際の走馬灯 */
+  { type: "line", src: "今際の際の走馬灯", units: [
+    { name: "last_moment", pos: "n", jp: "今際の際の", tr: "imawakiwa no", en: "in my last moments", ru: "в последний миг" },
+    { name: "life_flashes", pos: "n", jp: "走馬灯", tr: "soumatou", en: "my life flashes before my eyes", ru: "жизнь проносится перед глазами" }
+  ]
+  },
+
+  { type: "section", label: "Final chorus — fading" },
+
+  /* no.61 — 好きなことだけでいいです… */
+  { type: "line", src: "好きなことだけでいいです…", units: [
+    { name: "all_i_need", pos: "adjna", jp: "好きなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです…", tr: "de ii desu …", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.62 — 全人類が好きなことやったら */
+  { type: "line", src: "全人類が好きなことやったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類が", tr: "zenjinrui ga", en: "if all of humanity", ru: "если всё человечество" },
+    { name: "i_like", pos: "n", jp: "好きなこと", tr: "suki na koto", en: "did the things they like,", ru: "сделало то, что нравится," },
+    { name: "if", pos: "conj", jp: "やったら", tr: "yattara", en: "", ru: "если" }
+  ]
+  },
+
+  /* no.63 — 世界は滅亡するけど */
+  { type: "line", src: "世界は滅亡するけど", units: [
+    { name: "world", pos: "n", jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
+    { name: "perish", pos: "v", jp: "滅亡する", tr: "metsubou suru", en: "would turn to ruin", ru: "погиб бы, но" },
+    { name: "though", pos: "conj", jp: "けど", tr: "kedo", en: "", ru: "но" }
+  ]
+  },
+
+  { type: "section", label: "Final verse — what used to be" },
+
+  /* no.64 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.65 — みんな　好きなことが好きでした */
+  { type: "line", src: "みんな　好きなことが好きでした", units: [
+    { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
+    { name: "i_like", pos: "n", jp: "好きなことが", tr: "suki na koto ga", en: "the things they liked", ru: "то, что нравилось," },
+    { name: "everyone_loved", pos: "v", jp: "好きでした", tr: "suki deshita", en: "they loved", ru: "они любили" }
+  ]
+  },
+
+  /* no.66 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.67 — みんな　嫌なことは嫌でした */
+  { type: "line", src: "みんな　嫌なことは嫌でした", units: [
+    { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
+    { name: "dislike", pos: "n", jp: "嫌なことは", tr: "iya na koto wa", en: "the things they disliked", ru: "то, что не нравилось," },
+    { name: "everyone_hated", pos: "v", jp: "嫌でした", tr: "iya deshita", en: "they hated", ru: "они ненавидели" }
+  ]
+  },
+
+  /* no.68 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.69 — ほんと　すきなことだけでいいです */
+  { type: "line", src: "ほんと　すきなことだけでいいです", units: [
+    { name: "really", pos: "adv", jp: "ほんと　", tr: "honto ", en: "really", ru: "правда" },
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["really", "only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.70 — 全人類が好きなことやったら */
+  { type: "line", src: "全人類が好きなことやったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類が", tr: "zenjinrui ga", en: "if all of humanity", ru: "если всё человечество" },
+    { name: "i_like", pos: "n", jp: "好きなこと", tr: "suki na koto", en: "did the things they like,", ru: "сделало то, что нравится," },
+    { name: "if", pos: "conj", jp: "やったら", tr: "yattara", en: "", ru: "если" }
+  ]
+  },
+
+  /* no.71 — 世界は滅亡したけど */
+  { type: "line", src: "世界は滅亡したけど", units: [
+    { name: "world", pos: "n", jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
+    { name: "perished", pos: "v", jp: "滅亡した", tr: "metsubou shita", en: "turned to ruin", ru: "погиб, но" },
+    { name: "though", pos: "conj", jp: "けど", tr: "kedo", en: "", ru: "но" }
+  ]
+  },
+
+  /* no.72 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.73 — 君のことが　ほんとに好きでした */
+  { type: "line", src: "君のことが　ほんとに好きでした", units: [
+    { name: "about_you", pos: "n", jp: "君のことが　", tr: "kimi no koto ga ", en: "about you", ru: "в тебе" },
+    { name: "truly", pos: "adv", jp: "ほんとに", tr: "honto ni", en: "really", ru: "по-настоящему" },
+    { name: "everyone_loved", pos: "v", jp: "好きでした", tr: "suki deshita", en: "I liked", ru: "любил" }
+  ]
+  },
+
+  /* no.74 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.75 — 君は違う誰かが好きでした */
+  { type: "line", src: "君は違う誰かが好きでした", units: [
+    { name: "you", pos: "pron", jp: "君は", tr: "kimi wa", en: "you", ru: "ты" },
+    { name: "another", pos: "n", jp: "違う誰かが", tr: "chigau dareka ga", en: "someone else", ru: "кто-то другой" },
+    { name: "you_liked", pos: "v", jp: "好きでした", tr: "suki deshita", en: "you liked", ru: "ты любил" }
+  ]
+  },
+
+  /* no.76 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "all_i_need", pos: "adjna", jp: "すきなこと", tr: "suki na koto", en: "only what I like", ru: "только то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "", ru: "" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "all_i_need", "thats_fine"] }
+  },
+
+  /* no.77 — やっぱ　それだけじゃ難しいです */
+  { type: "line", src: "やっぱ　それだけじゃ難しいです", units: [
+    { name: "after_all", pos: "adv", jp: "やっぱ　", tr: "yappa ", en: "after all", ru: "в конце концов" },
+    { name: "only_that", pos: "adv", jp: "それだけじゃ", tr: "sore dake ja", en: "only that", ru: "только это" },
+    { name: "hard", pos: "adj", jp: "難しいです", tr: "muzukashii desu", en: "is difficult", ru: "сложно" }
+  ]
+  },
+
+  /* no.78 — 全人類が幸せになったら */
+  { type: "line", src: "全人類が幸せになったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類が", tr: "zenjinrui ga", en: "if all of humanity", ru: "если всё человечество" },
+    { name: "happy", pos: "adj", jp: "幸せに", tr: "shiawase ni", en: "became happy,", ru: "стало счастливым," },
+    { name: "if", pos: "conj", jp: "なったら", tr: "nattara", en: "", ru: "если" }
+  ]
+  },
+
+  /* no.79 — 宇宙が迷惑するから */
+  { type: "line", src: "宇宙が迷惑するから", units: [
+    { name: "universe", pos: "n", jp: "宇宙が", tr: "uchuu ga", en: "the universe", ru: "вселенная" },
+    { name: "trouble", pos: "v", jp: "迷惑する", tr: "meiwaku suru", en: "would be troubled", ru: "возмутилась бы, потому что" },
+    { name: "because", pos: "conj", jp: "から", tr: "kara", en: "", ru: "потому что" }
+  ]
+  },
+];
+</script>
+<script>
+/* ============================================================
+   LinguaMap engine v1.1 — data-driven parallel-text renderer.
+   Expects globals: META, DATA (see <script id="data">) and the
+   pure validator validateData() (loaded before this file).
+
+   Data model (why it is safe):
+   - ONE unit object holds ALL languages: {name,pos,jp,tr,en,ru,...}
+     -> a name can never drift between languages;
+   - the jp column renders the units array in array order, and the
+     transliteration column renders the SAME array -> jp<->tr order
+     mirror is structurally guaranteed;
+   - target languages may reorder via block.ord.{lang} = [names...];
+     the validator proves those are exact permutations (no drops).
+   ============================================================ */
+(function () {
+  "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var el = function (tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  };
+
+  var COLS = META.columns;
+  var SRC = META.sourceKey || "jp";
+  var TR = META.translitKey || "tr";
+  var state = { pinned: null, solo: null, cols: {}, plain: false };
+  COLS.forEach(function (c) { state.cols[c] = true; });
+
+  /* ---------- ordering ---------- */
+  function orderFor(block, lang) {
+    var units = block.units;
+    var ord = block.ord && block.ord[lang];
+    if (!ord) return units.slice();
+    var q = {};
+    units.forEach(function (u) { (q[u.name] = q[u.name] || []).push(u); });
+    var out = [];
+    ord.forEach(function (n) {
+      var u = (q[n] || []).shift();
+      if (u) out.push(u);
+    });
+    return out;
+  }
+
+  /* ---------- rendering ---------- */
+  function makeSpan(u, lang) {
+    var s = el("span", "unit pos-" + (u.pos || "part"), u[lang]);
+    s.setAttribute("data-name", u.name);
+    s.setAttribute("data-pos", u.pos || "part");
+    return s;
+  }
+
+  function fillCell(cell, block, lang) {
+    orderFor(block, lang).forEach(function (u) {
+      cell.appendChild(makeSpan(u, lang));
+      cell.appendChild(document.createTextNode(" "));
+    });
+  }
+
+  function renderLineRow(container, block, num, odd) {
+    var row = el("div", "line");
+    var z = odd ? " z" : "";
+    var ln = el("div", "lineno" + z, num || "");
+    row.appendChild(ln);
+    COLS.forEach(function (lang) {
+      var cell = el("div", "cell lang-" + lang + (lang === SRC ? " src" : "") + z);
+      cell.setAttribute("data-lang", lang);
+      cell.setAttribute("data-full", (META.columnTitles || {})[lang] || lang);
+      fillCell(cell, block, lang);
+      row.appendChild(cell);
+    });
+    container.appendChild(row);
+  }
+
+  function renderTitleRow(container, block) {
+    var row = el("div", "line");
+    var ln = el("div", "lineno", "");
+    row.appendChild(ln);
+    COLS.forEach(function (lang) {
+      var cell = el("div", "cell titlecell lang-" + lang + (lang === SRC ? " src" : ""));
+      cell.setAttribute("data-lang", lang);
+      cell.setAttribute("data-full", (META.columnTitles || {})[lang] || lang);
+      fillCell(cell, block, lang);
+      row.appendChild(cell);
+    });
+    container.appendChild(row);
+  }
+
+  function render() {
+    var box = $("#lines");
+    box.innerHTML = "";
+    /* column header */
+    var head = el("div", "line");
+    head.appendChild(el("div", "lineno", "#"));
+    COLS.forEach(function (lang) {
+      var h = el("div", "hcell lang-" + lang, (META.columnTitles || {})[lang] || lang);
+      h.setAttribute("data-lang", lang);
+      if (lang === TR && META.trMirror !== false) {
+        h.appendChild(el("span", "mirror", "  (mirrors jp)"));
+      }
+      head.appendChild(h);
+    });
+    box.appendChild(head);
+
+    var n = 0;
+    DATA.forEach(function (block) {
+      if (block.type === "title") { renderTitleRow(box, block); return; }
+      if (block.type === "gap") {
+        var g = el("div", "line");
+        g.appendChild(el("div", "gapcell", ""));
+        box.appendChild(g);
+        return;
+      }
+      if (block.type === "section") {
+        var srow = el("div", "line");
+        srow.appendChild(el("div", "sectioncell", block.label || ""));
+        box.appendChild(srow);
+        return;
+      }
+      n += 1;
+      renderLineRow(box, block, String(n), n % 2 === 0);
+    });
+  }
+
+  /* ---------- highlight / pin ---------- */
+  function units() { return document.querySelectorAll(".unit"); }
+  function highlight(name) {
+    document.body.classList.add("dimming");
+    units().forEach(function (s) {
+      s.classList.toggle("sync", s.getAttribute("data-name") === name);
+    });
+    document.querySelectorAll(".vrow").forEach(function (r) {
+      r.classList.toggle("active", r.getAttribute("data-n") === name);
+    });
+  }
+  function clearHighlight() {
+    document.body.classList.remove("dimming");
+    units().forEach(function (s) { s.classList.remove("sync"); });
+    document.querySelectorAll(".vrow").forEach(function (r) { r.classList.remove("active"); });
+  }
+  function pin(name) {
+    if (state.pinned === name) { state.pinned = null; clearHighlight(); return; }
+    state.pinned = name;
+    highlight(name);
+  }
+  function wireUnit(s) {
+    var n = s.getAttribute("data-name");
+    s.addEventListener("mouseenter", function () { if (!state.pinned) highlight(n); });
+    s.addEventListener("mouseleave", function () { if (!state.pinned) clearHighlight(); });
+    s.addEventListener("click", function (e) { e.stopPropagation(); pin(n); });
+  }
+
+  /* ---------- legend ---------- */
+  var GROUPS = META.posGroups || [
+    { label: "nouns", codes: ["n", "npr"] },
+    { label: "verbs", codes: ["v"] },
+    { label: "adjectives", codes: ["adj", "adjna"] },
+    { label: "others", codes: ["adv", "pron", "conj", "interj", "part", "q"] }
+  ];
+  function posCounts() {
+    var c = {}, first = {};
+    DATA.forEach(function (b) {
+      if (!b.units) return;
+      b.units.forEach(function (u) {
+        if (first[u.name]) return;
+        first[u.name] = 1;
+        c[u.pos] = (c[u.pos] || 0) + 1;
+      });
+    });
+    return c;
+  }
+  function renderLegend() {
+    var box = $("#legend");
+    box.innerHTML = "";
+    box.appendChild(el("p", "cap",
+      "Word colours = parts of speech (based on the Japanese) - same class, same colour family. Click a chip to focus that class."));
+    var counts = posCounts();
+    GROUPS.forEach(function (g) {
+      box.appendChild(el("span", "lg", g.label));
+      g.codes.forEach(function (code) {
+        if (!(META.posLabels || {})[code]) return;
+        var chip = el("span", "chip pos-" + code,
+          (META.posLabels[code] || code) + " " + (counts[code] ? "(" + counts[code] + ")" : ""));
+        chip.setAttribute("data-pos", code);
+        chip.addEventListener("click", function () { solo(code); });
+        box.appendChild(chip);
+      });
+    });
+  }
+  function solo(code) {
+    if (state.solo === code) {
+      state.solo = null;
+      document.body.classList.remove("soloing");
+      units().forEach(function (s) { s.classList.remove("solo"); });
+      document.querySelectorAll(".chip").forEach(function (c) { c.classList.remove("active"); });
+      return;
+    }
+    state.solo = code;
+    document.body.classList.add("soloing");
+    units().forEach(function (s) {
+      s.classList.toggle("solo", s.getAttribute("data-pos") === code);
+    });
+    document.querySelectorAll(".chip").forEach(function (c) {
+      c.classList.toggle("active", c.getAttribute("data-pos") === code);
+    });
+  }
+
+  /* ---------- column toggles ---------- */
+  function renderColBox() {
+    var box = $("#colbox");
+    COLS.forEach(function (lang) {
+      var lab = el("label");
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = true;
+      cb.addEventListener("change", function () {
+        state.cols[lang] = cb.checked;
+        applyCols();
+      });
+      lab.appendChild(cb);
+      lab.appendChild(document.createTextNode((META.columnTitles || {})[lang] || lang));
+      box.appendChild(lab);
+    });
+  }
+  function applyCols() {
+    var n = COLS.filter(function (l) { return state.cols[l]; }).length;
+    document.documentElement.style.setProperty("--cols", Math.max(n, 1));
+    document.querySelectorAll("#lines [data-lang]").forEach(function (c) {
+      var lang = c.getAttribute("data-lang");
+      if (lang) c.style.display = state.cols[lang] ? "" : "none";
+    });
+  }
+
+  /* ---------- plain-text (fixation) panel ---------- */
+  function renderPlain() {
+    var pre = $("#plainPre");
+    var out = [];
+    var n = 0;
+    DATA.forEach(function (b) {
+      if (b.type === "gap") { out.push(""); return; }
+      if (b.type === "section") { out.push("- " + (b.label || "") + " -"); return; }
+      if (b.type === "title" || !b.units) return;
+      n += 1;
+      var src = b.units.map(function (u) { return u[SRC] || ""; }).join("");
+      var ok = b.src ? (src === b.src ? "  [= source OK]" : "  [! MISMATCH]") : "";
+      out.push(String(n).padStart(2, " ") + ". " + src + ok);
+    });
+    pre.textContent = out.join("\n");
+  }
+
+  /* ---------- vocabulary index ---------- */
+  function renderVocab() {
+    var list = $("#vlist");
+    list.innerHTML = "";
+    var seen = {}, order = [];
+    DATA.forEach(function (b) {
+      if (!b.units) return;
+      b.units.forEach(function (u) {
+        if (seen[u.name]) { seen[u.name].count += 1; return; }
+        seen[u.name] = { u: u, count: 1 };
+        order.push(u.name);
+      });
+    });
+    var posRank = {};
+    (META.posOrder || Object.keys(META.posLabels)).forEach(function (p, i) { posRank[p] = i; });
+    order.sort(function (a, b) {
+      var d = (posRank[seen[a].u.pos] || 99) - (posRank[seen[b].u.pos] || 99);
+      return d !== 0 ? d : (a < b ? -1 : a > b ? 1 : 0);
+    });
+    var lastPos = null;
+    order.forEach(function (name) {
+      var e = seen[name], u = e.u;
+      var missing = COLS.some(function (l) { return !(u[l] || "").trim(); });
+      if (missing) return;
+      if (u.pos !== lastPos) {
+        list.appendChild(el("div", "vgroup", (META.posLabels || {})[u.pos] || u.pos));
+        lastPos = u.pos;
+      }
+      var row = el("div", "vrow");
+      row.setAttribute("data-n", name);
+      var chip = el("span", "chip pos-" + u.pos, (META.posLabels || {})[u.pos] || u.pos);
+      row.appendChild(chip);
+      row.appendChild(el("span", "nm", name));
+      row.appendChild(el("span", "vsrc", u[SRC] || ""));
+      COLS.forEach(function (lang) {
+        if (lang === SRC) return;
+        row.appendChild(el("span", "vcell v" + lang, u[lang] || ""));
+      });
+      row.appendChild(el("span", "vct", "x" + e.count));
+      row.addEventListener("click", function () { pin(name); });
+      list.appendChild(row);
+    });
+  }
+
+  /* ---------- validation panel ---------- */
+  function renderValidation() {
+    var res = validateData(META, DATA);
+    var badge = $("#valBadge");
+    badge.textContent = res.errors ? String(res.errors + res.warnings) : "OK";
+    badge.className = res.errors ? "bad" : "ok";
+    var list = $("#valList");
+    list.innerHTML = "";
+    var okLine = el("div", "valitem ok",
+      res.stats.lines + " lines | " + res.stats.uniqueNames + " unique meanings | " +
+      res.stats.spans + " mapped spans | " +
+      (res.errors ? res.errors + " ERRORS" : "no errors") + ", " +
+      res.warnings + " warnings");
+    list.appendChild(okLine);
+    if (!res.issues.length) {
+      list.appendChild(el("div", "valitem ok",
+        "All invariants hold: jp text reconstructs the source, jp/tr mirror is structural, ord arrays are permutations, one POS per name."));
+    }
+    res.issues.forEach(function (i) {
+      list.appendChild(el("div", "valitem " + (i.sev === "err" ? "err" : ""),
+        (i.sev === "err" ? "ERROR: " : "WARN: ") + i.msg));
+    });
+    return res;
+  }
+
+  /* ---------- boot ---------- */
+  document.addEventListener("DOMContentLoaded", function () {
+    document.documentElement.style.setProperty("--cols", COLS.length);
+    $("#appTitle").textContent = META.title || "";
+    $("#appSub").textContent = META.subtitle || "";
+    $("#appCredit").textContent = META.credit || "";
+
+    render();
+    renderLegend();
+    renderColBox();
+    renderPlain();
+    renderVocab();
+    var res = renderValidation();
+    $("#stats").textContent =
+      res.stats.lines + " lines | " + res.stats.uniqueNames + " unique meanings | " +
+      res.stats.spans + " mapped spans | columns: " + COLS.join(" / ");
+    if (res.errors) console.warn("[LinguaMap] validation errors:", res.issues);
+
+    document.querySelectorAll(".unit").forEach(wireUnit);
+
+    document.addEventListener("click", function () {
+      if (state.pinned) { state.pinned = null; clearHighlight(); }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && state.pinned) { state.pinned = null; clearHighlight(); }
+    });
+
+    $("#btnTheme").addEventListener("click", function () {
+      var html = document.documentElement;
+      var dark = html.getAttribute("data-theme") === "dark";
+      html.setAttribute("data-theme", dark ? "light" : "dark");
+      $("#btnTheme").classList.toggle("on", !dark);
+      try { localStorage.setItem("linguamap-theme", dark ? "light" : "dark"); } catch (e) {}
+    });
+    try {
+      if (localStorage.getItem("linguamap-theme") === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+        $("#btnTheme").classList.add("on");
+      }
+    } catch (e) {}
+
+    $("#btnPlain").addEventListener("click", function () {
+      state.plain = !state.plain;
+      $("#plain").open = state.plain;
+      document.body.classList.toggle("plain", state.plain);
+      $("#btnPlain").classList.toggle("on", state.plain);
+    });
+    $("#btnVocab").addEventListener("click", function () {
+      var p = $("#vocabPanel");
+      p.open = !p.open;
+      $("#btnVocab").classList.toggle("on", p.open);
+    });
+    $("#btnVal").addEventListener("click", function () {
+      var p = $("#valPanel");
+      p.open = !p.open;
+      $("#btnVal").classList.toggle("on", p.open);
+    });
+    $("#vsearch").addEventListener("input", function (e) {
+      var q = e.target.value.toLowerCase();
+      document.querySelectorAll("#vlist .vrow").forEach(function (r) {
+        r.style.display = r.textContent.toLowerCase().indexOf(q) > -1 ? "" : "none";
+      });
+    });
+
+    applyCols();
+  });
+})();
+
+</script>
+</body>
+</html>
