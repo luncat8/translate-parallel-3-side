@@ -5,7 +5,7 @@
 //  A. ground truth — every line block's src equals the extracted fixation line
 //     (same count, same order) — catches transcription drift at the source;
 //  B. the template's own pure validator (validateData): I1..I6 invariants —
-//     every unit filled in every column, jp cells rebuild src exactly,
+//     every unit filled in every column, source cells rebuild src exactly,
 //     ord arrays are exact permutations, one POS per name, known POS codes.
 // Exit code 1 on any ERROR-level issue or fixation mismatch; warnings allowed.
 "use strict";

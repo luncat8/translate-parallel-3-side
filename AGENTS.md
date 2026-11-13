@@ -111,7 +111,6 @@ Do not invent a different structure per project. Swap the data, not the model.
 - `archive/` — plans and worklogs (`0.1.0-plan.md`, `0.2.0-plan.md`, etc.).
 - `experiments/` — measurement/validation scripts (Node), not loaded by the page;
 	`experiments/logs/` keeps only data useful for comparing regressions.
-- `qa/` — browser QA screenshots.
 - `0.1.x-draft.md` — human thoughts on goals/design; user prompts may be stored
 	as drafts.
 
@@ -129,12 +128,18 @@ songs/<id>/
 │   └── expected-translation.ru.txt   # line-aligned gold Russian
 ├── map/
 │   └── song-data.js                  # canonical META + DATA
-└── result.html                       # generated standalone page (deliverable)
+├── result.html                       # generated standalone page (deliverable)
+├── worklog.md                        # per-song checklist + decisions + audit
+└── qa/                               # per-song screenshots and manual QA notes
 ```
 
 `mapMode: "word"` marks a hand-segmented map; `"line-starter"` marks a generated
 line-level preview that still needs linguistic segmentation. Do not invent a
-different data model per song — swap the data, not the engine.
+different data model per song — swap the data, not the engine. The page
+`<title>` is read from the map's `META.title` at build time (single source of
+truth); `META.sourceKey`/`META.translitKey` name the fixation and mirror
+columns (defaults `jp`/`tr`), so another source language is a config change,
+not an engine change.
 
 ## sandbox
 
@@ -159,8 +164,9 @@ Per text, in strict order:
 	`fixation.json`. Every line's `src` must match one of those lines.
 2. **Expected translations.** Write line-aligned `expected-translation.en.txt`
 	and `expected-translation.ru.txt`; blank stanza lines must match the source.
-	`python3 tools/song.py export --song <id>` derives these files from a finished
-	word-level map instead.
+	Keep them as the hand-written gold text (sukina-koto-dake-de-ii-desu policy),
+	or derive them with `python3 tools/song.py export --song <id>` once the map
+	is word-level and the gold text should mirror it (jumping-girl policy).
 3. **Segmentation.** Split every line into units; give each meaning a `name` and
 	`pos`. Build a glossary first for recurring items (titles, names, refrain
 	words). Repeated meaning ⇒ same `name`, forever.
@@ -175,8 +181,9 @@ Per text, in strict order:
 For long texts (>40 lines), deliver in stanzas: freeze the glossary after the
 first two stanzas, get format approval, then batch the rest.
 
-Record development steps and validation in `archive/<plan>-worklog.md`. End the
-job with a next-step suggestion.
+Record development steps and validation in the song's `worklog.md` (the
+per-song equivalent of `archive/<plan>-worklog.md`). End the job with a
+next-step suggestion.
 
 ## segmentation rules
 

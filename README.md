@@ -18,7 +18,9 @@ songs/<song-id>/
 │   └── expected-translation.ru.txt
 ├── map/
 │   └── song-data.js            canonical META + DATA map
-└── result.html                 standalone, offline deliverable
+├── result.html                 standalone, offline deliverable
+├── worklog.md                  per-song checklist (fixes the plan in place)
+└── qa/                         per-song screenshots and manual QA notes
 ```
 
 Expected translations are plain line-aligned gold text: one target line per source line, with the same blank stanza lines. `result.html` is generated from `map/song-data.js`; never hand-edit it.
@@ -28,9 +30,9 @@ Expected translations are plain line-aligned gold text: one target line per sour
 | Folder | Source | Map | Example |
 |---|---|---|---|
 | `songs/jumping-girl/` | Japanese / Romaji / English text | hand-segmented word map with English + Russian | full 53-line LinguaMap; expected translations exported from the map |
-| `songs/sukina-koto-dake-de-ii-desu/` | the placed Japanese / Romaji / English TSV | generated line-level starter map | **expected translation example**: the placed English text plus a new line-aligned Russian translation, rendered side by side in `result.html` |
+| `songs/sukina-koto-dake-de-ii-desu/` | the placed Japanese / Romaji / English TSV | hand-segmented word map with English + Russian | **expected-translation example**: the placed English text (kept verbatim) plus a line-aligned hand-written Russian translation, rendered side by side in `result.html` |
 
-The second song's `mapMode` is `line-starter`: it proves the folder/build pipeline and shows the expected translations, but its one-unit-per-line segmentation is a scaffold for a later linguistic word map. The first song's `mapMode` is `word`.
+Both songs' `mapMode` is `word`: meaning-level units, stable glossary names, real POS classes. A freshly scaffolded song gets `mapMode: "line-starter"` — a valid line-level preview with one unit per source line and placeholder POS labels, which you replace with a hand-segmented word map when the linguistic pass begins, then rebuild. The `<title>` of `result.html` comes from the map's `META.title`; `song.json` carries no page title.
 
 ## Commands
 

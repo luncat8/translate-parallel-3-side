@@ -28,6 +28,7 @@ TSV_OUTPUT = {
 	"russian": "sources/expected-translation.ru.txt"
 }
 REQUIRED = ["source", "transliteration", "fixation", "map", "result", "expectedTranslations"]
+META_TITLE = re.compile(r'^\s*title:\s*("(?:[^"\\]|\\.)*")', re.M)
 
 
 class SongError(Exception):
@@ -168,7 +169,7 @@ def starter_map(song_id):
 		'',
 		'/* Line-aligned starter map: refine one-unit lines into meaning units. */',
 		'const META = {',
-		f'\ttitle: {js(cfg.get("pageTitle", title + " — LinguaMap"))},',
+		f'\ttitle: {js(title + " — LinguaMap")},',
 		f'\tsubtitle: {js("Parallel word map: 日本語 · Romaji · English · Русский")},',
 		'\tcredit: "Generated from line-aligned expected translations by tools/song.py. '
 		'One unit per source line; colours and POS are placeholders until word-level segmentation. '
@@ -176,6 +177,8 @@ def starter_map(song_id):
 		f'\tcolumns: {js(COLUMNS)},',
 		'\tcolumnTitles: { ru: "Русский", en: "English", jp: "日本語", tr: "Romaji" },',
 		'\ttrMirror: true,',
+		'\tsourceKey: "jp",',
+		'\ttranslitKey: "tr",',
 		'\tposLabels: { n: "line (starter map)" },',
 		'\tposOrder: ["n"]',
 		'};',
@@ -199,6 +202,19 @@ def write_manifest(song_dir, cfg):
 		encoding="utf-8")
 
 
+def page_title(data_src, fallback):
+	"""The <title> lives in the map's META; song.json is only a fallback."""
+	match = META_TITLE.search(data_src)
+	if match:
+		try:
+			title = json.loads(match.group(1))
+			if isinstance(title, str) and title.strip():
+				return title
+		except json.JSONDecodeError:
+			pass
+	return fallback
+
+
 def render_html(song_id):
 	song_dir, cfg = load_song(song_id)
 	map_path = resolve(song_dir, cfg["map"], "map")
@@ -210,10 +226,11 @@ def render_html(song_id):
 		lambda _: data_block, template, count=1)
 	if count != 1:
 		raise SongError(f"{TEMPLATE}: data script hook not found")
-	page_title = html.escape(cfg.get("pageTitle", cfg["title"] + " — LinguaMap"), quote=False)
+	fallback = cfg.get("title", cfg["id"]) + " — LinguaMap"
+	title = html.escape(page_title(data_src, fallback), quote=False)
 	page, count = re.subn(
 		r"<title>LinguaMap — parallel text engine \(demo\)</title>",
-		lambda _: f"<title>{page_title}</title>", page, count=1)
+		lambda _: f"<title>{title}</title>", page, count=1)
 	if count != 1:
 		raise SongError(f"{TEMPLATE}: demo title not found")
 	return page
@@ -317,6 +334,20 @@ def import_tsv(source_path, song_dir, expected_ru=None):
 	return outputs["japanese"]
 
 
+def worklog(title):
+	return (
+		f"# {title}\n\n## Steps\n\n"
+		"- [ ] fixation reviewed\n"
+		"- [ ] glossary frozen (recurring names)\n"
+		"- [ ] segmentation\n"
+		"- [ ] translation columns\n"
+		"- [ ] data assembly + ord\n"
+		"- [ ] build green\n"
+		"- [ ] human pass (colours, refrains, mobile, print)\n\n"
+		"## Notes\n\n"
+	)
+
+
 def new_song(args):
 	if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", args.song):
 		raise SongError("--song must be a lowercase kebab-case id")
@@ -330,7 +361,6 @@ def new_song(args):
 	cfg = {
 		"id": args.song,
 		"title": args.title,
-		"pageTitle": args.page_title or args.title + " — LinguaMap",
 		"sourceLanguage": "ja",
 		"sourceFormat": "tsv",
 		"columns": COLUMNS,
@@ -348,6 +378,9 @@ def new_song(args):
 	write_manifest(song_dir, cfg)
 	try:
 		jp_lines = import_tsv(source_path, song_dir, args.expected_ru)
+		(song_dir / "qa").mkdir(exist_ok=True)
+		(song_dir / "qa" / ".gitkeep").write_text("", encoding="utf-8")
+		(song_dir / "worklog.md").write_text(worklog(args.title), encoding="utf-8")
 		write_fixation(args.song)
 		starter_map(args.song)
 		build_song(args.song)
@@ -396,7 +429,6 @@ def main():
 	p.add_argument("--title", required=True)
 	p.add_argument("--source", required=True)
 	p.add_argument("--expected-ru")
-	p.add_argument("--page-title")
 
 	args = parser.parse_args()
 	try:

@@ -16,7 +16,9 @@ REQUIRED = [
 	"sources/expected-translation.en.txt",
 	"sources/expected-translation.ru.txt",
 	"map/song-data.js",
-	"result.html"
+	"result.html",
+	"worklog.md",
+	"qa/.gitkeep"
 ]
 
 

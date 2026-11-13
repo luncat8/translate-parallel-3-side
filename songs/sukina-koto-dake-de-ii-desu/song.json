@@ -1,7 +1,6 @@
 {
 	"id": "sukina-koto-dake-de-ii-desu",
 	"title": "すきなことだけでいいです",
-	"pageTitle": "すきなことだけでいいです — LinguaMap",
 	"sourceLanguage": "ja",
 	"sourceFormat": "tsv",
 	"columns": [
@@ -15,7 +14,7 @@
 	"fixation": "sources/fixation.json",
 	"map": "map/song-data.js",
 	"result": "result.html",
-	"mapMode": "line-starter",
+	"mapMode": "word",
 	"expectedTranslations": {
 		"en": "sources/expected-translation.en.txt",
 		"ru": "sources/expected-translation.ru.txt"

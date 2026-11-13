@@ -112,7 +112,7 @@ body.plain .unit{color:inherit!important;background:none!important;box-shadow:no
 /* ---------------- main grid ---------------- */
 #lines{background:var(--card);border:1px solid var(--line);border-radius:16px;
   box-shadow:0 6px 24px rgba(0,0,0,.05);padding:4px 0;margin-bottom:8px;
-  display:grid;grid-template-columns:3rem repeat(4,minmax(0,1fr));gap:0 18px;
+  display:grid;grid-template-columns:2.4rem repeat(var(--cols,4),minmax(0,1fr));gap:0 18px;
   align-items:baseline}
 .line{display:contents}
 .lineno{color:var(--muted);font-size:11px;text-align:right;padding:10px 0 6px;
@@ -120,7 +120,7 @@ body.plain .unit{color:inherit!important;background:none!important;box-shadow:no
 .cell{padding:9px 0 8px;border-bottom:1px solid var(--line);min-width:0;overflow-wrap:break-word}
 .line:last-of-type .cell{border-bottom:none}
 .cell.z{background:var(--card2)}
-.cell.jp{font-weight:500}
+.cell.src{font-weight:500}
 .cell.tr{color:var(--muted);font-size:13.5px}
 .hcell{padding:10px 0 9px;font-weight:600;letter-spacing:.06em;font-size:12.5px;
   color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--line)}
@@ -129,7 +129,7 @@ body.plain .unit{color:inherit!important;background:none!important;box-shadow:no
 .sectioncell{grid-column:1/-1;font-size:12px;font-weight:700;color:var(--muted);
   letter-spacing:.1em;text-transform:uppercase;padding:14px 0 4px;border-bottom:none}
 .titlecell{font-size:clamp(17px,2vw,22px);padding:16px 0 12px}
-.titlecell.jp{font-weight:600}
+.titlecell.src{font-weight:600}
 
 /* ---------------- panels (vocab / validation) ---------------- */
 .panel{margin:18px 0 26px}
@@ -145,7 +145,7 @@ body.plain .unit{color:inherit!important;background:none!important;box-shadow:no
 .valitem.ok{border-left-color:var(--pos-adj)}
 #vsearch{margin:0 0 10px;padding:8px 14px;border:1px solid var(--line);border-radius:999px;
   width:min(360px,100%);font-size:14px;outline:none;background:var(--card);color:inherit}
-.vrow{display:grid;grid-template-columns:110px 150px 1fr .9fr 1fr 1.1fr 42px;gap:12px;
+.vrow{display:grid;grid-template-columns:96px 150px repeat(var(--cols,4),minmax(0,1fr)) 42px;gap:12px;
   padding:6px 12px;border-bottom:1px solid var(--line);font-size:13.5px;cursor:pointer;
   align-items:baseline;background:var(--card)}
 .vrow:hover{filter:brightness(.985)}
@@ -170,14 +170,14 @@ footer code{font-size:11px}
   .hcell{display:none}
   .cell{border-bottom:1px dashed var(--line);padding:7px 0 6px}
   .cell.z{background:none}
-  .cell.jp,.cell.tr,.cell.ru,.cell.en{font-size:14px;line-height:1.95}
-  .cell.tr{font-size:13px}
+  .cell{font-size:14px;line-height:1.95}
+  .cell.lang-tr{font-size:13px}
   .cell::before{content:attr(data-full);display:inline-block;font-size:9.5px;font-weight:700;
     color:var(--bg);background:var(--muted);border-radius:4px;padding:1px 6px;margin-right:8px;
     position:relative;top:-2px;letter-spacing:.08em}
   .gapcell,.sectioncell{padding:8px 0 2px}
   .vrow{grid-template-columns:96px 1fr;row-gap:1px}
-  .vrow .vjp,.vrow .vtr,.vrow .ven,.vrow .vru,.vrow .vct{grid-column:2}
+  .vrow .vsrc,.vrow .vtr,.vrow .vcell{grid-column:2}
 }
 @media(max-width:560px){
   .controls{gap:6px}
@@ -188,7 +188,7 @@ footer code{font-size:11px}
 @media print{
   .controls,#plain,.panel,footer,#stats{display:none!important}
   body{background:#fff;color:#000;font-size:11px}
-  #lines{box-shadow:none;border:none;grid-template-columns:2.4rem repeat(4,minmax(0,1fr))!important}
+  #lines{box-shadow:none;border:none;grid-template-columns:2.4rem repeat(var(--cols,4),minmax(0,1fr))!important}
   .cell{border-bottom:1px solid #ddd;padding:5px 0}
   .unit{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .line{break-inside:avoid}
@@ -227,14 +227,14 @@ footer code{font-size:11px}
 
   <details id="vocabPanel" class="panel">
     <summary>Vocabulary index — every <code>name</code>, grouped by part of speech</summary>
-    <p class="pnote">Auto-generated from the data table: 日本語 / Romaji / English / Русский per meaning, with occurrence counts. Click a row to pin it in the text.</p>
+    <p class="pnote">Auto-generated from the data table: every column per meaning, with occurrence counts. Click a row to pin it in the text.</p>
     <input id="vsearch" type="text" placeholder="Filter… (meaning, romaji, translation)">
     <div id="vlist"></div>
   </details>
 
   <details id="valPanel" class="panel">
     <summary>Validation — data invariants</summary>
-    <p class="pnote">Checks: jp cells reconstruct the fixation source character-for-character · jp/tr mirror is structural · en/ru order arrays are exact permutations · one POS per name · all columns filled.</p>
+    <p class="pnote">Checks: the source column reconstructs the fixation text character-for-character · the transliteration column mirrors it structurally · target order arrays are exact permutations · one POS per name · every column filled.</p>
     <div id="valList"></div>
   </details>
 </main>
@@ -252,9 +252,11 @@ footer code{font-size:11px}
 
    Encoding of the hard invariants from the AGENTS.md spec:
    I1  same name  => same meaning, present in EVERY language column
-   I2  jp column  = source text, character for character (src check)
-   I3  tr column mirrors jp order — guaranteed by the data model
-       (jp and tr live in the same unit object); verified per line
+   I2  source column (META.sourceKey) = fixation text, character for
+       character (src check)
+   I3  transliteration column (META.translitKey) mirrors source order —
+       guaranteed by the data model (both live in the same unit object);
+       verified per line
        if an explicit trOrd is given
    I4  en/ru free order — but their ord arrays must be permutations
        of the unit names (no drops, no unknown names)
@@ -268,7 +270,9 @@ function validateData(META, DATA) {
   var stats = { lines: 0, units: 0, uniqueNames: 0, spans: 0 };
   var posSet = Object.keys(META.posLabels || {});
   var cols = META.columns || [];
-  var nameInfo = {};   // name -> {pos, jp, count}
+  var srcKey = META.sourceKey || "jp";
+  var trKey = META.translitKey || "tr";
+  var nameInfo = {};   // name -> {pos, src, count}
 
   function err(msg) { issues.push({ sev: "err", msg: msg }); }
   function warn(msg) { issues.push({ sev: "warn", msg: msg }); }
@@ -309,21 +313,21 @@ function validateData(META, DATA) {
         if (prev.pos !== u.pos) {
           err("name \"" + u.name + "\": POS conflict (" + prev.pos + " vs " + u.pos + ")");
         }
-        if (prev.jp !== u.jp) {
-          warn("name \"" + u.name + "\": jp surface differs between occurrences (\"" +
-               prev.jp + "\" vs \"" + u.jp + "\")");
+        if (prev.src !== u[srcKey]) {
+          warn("name \"" + u.name + "\": " + srcKey + " surface differs between occurrences (\"" +
+               prev.src + "\" vs \"" + u[srcKey] + "\")");
         }
       } else {
-        nameInfo[u.name] = { pos: u.pos, jp: u.jp, count: 1 };
+        nameInfo[u.name] = { pos: u.pos, src: u[srcKey], count: 1 };
         stats.uniqueNames += 1;
       }
     });
 
-    /* I2: jp concat vs fixation source */
+    /* I2: source column concat vs fixation source */
     if (block.src) {
-      var concat = block.units.map(function (u) { return u.jp || ""; }).join("");
+      var concat = block.units.map(function (u) { return u[srcKey] || ""; }).join("");
       if (concat !== block.src) {
-        err("L" + no + ": jp cells do not reconstruct the source text\n" +
+        err("L" + no + ": " + srcKey + " cells do not reconstruct the source text\n" +
             "   got:  " + concat + "\n   want: " + block.src);
       }
     }
@@ -353,9 +357,9 @@ function validateData(META, DATA) {
 
     /* I3: explicit tr mirror check, if the author chose to spell it out */
     if (block.trOrd) {
-      var jpSeq = names.join("\u0001");
-      if (block.trOrd.join("\u0001") !== jpSeq) {
-        err("L" + no + ": trOrd does not mirror the jp order (I3 violated)");
+      var srcSeq = names.join("\u0001");
+      if (block.trOrd.join("\u0001") !== srcSeq) {
+        err("L" + no + ": trOrd does not mirror the " + srcKey + " order (I3 violated)");
       }
     }
   });
@@ -828,9 +832,9 @@ const DATA = [
    Data model (why it is safe):
    - ONE unit object holds ALL languages: {name,pos,jp,tr,en,ru,...}
      -> a name can never drift between languages;
-   - the jp column renders the units array in array order, and the
-     transliteration column renders the SAME array -> jp<->tr order
-     mirror is structurally guaranteed;
+   - the source column renders the units array in array order, and the
+     transliteration column renders the SAME array -> the mirror order
+     is structurally guaranteed;
    - target languages may reorder via block.ord.{lang} = [names...];
      the validator proves those are exact permutations (no drops).
    ============================================================ */
@@ -845,6 +849,8 @@ const DATA = [
   };
 
   var COLS = META.columns;
+  var SRC = META.sourceKey || "jp";
+  var TR = META.translitKey || "tr";
   var state = { pinned: null, solo: null, cols: {}, plain: false };
   COLS.forEach(function (c) { state.cols[c] = true; });
 
@@ -884,7 +890,7 @@ const DATA = [
     var ln = el("div", "lineno" + z, num || "");
     row.appendChild(ln);
     COLS.forEach(function (lang) {
-      var cell = el("div", "cell lang-" + lang + z);
+      var cell = el("div", "cell lang-" + lang + (lang === SRC ? " src" : "") + z);
       cell.setAttribute("data-lang", lang);
       cell.setAttribute("data-full", (META.columnTitles || {})[lang] || lang);
       fillCell(cell, block, lang);
@@ -898,7 +904,7 @@ const DATA = [
     var ln = el("div", "lineno", "");
     row.appendChild(ln);
     COLS.forEach(function (lang) {
-      var cell = el("div", "cell titlecell lang-" + lang);
+      var cell = el("div", "cell titlecell lang-" + lang + (lang === SRC ? " src" : ""));
       cell.setAttribute("data-lang", lang);
       cell.setAttribute("data-full", (META.columnTitles || {})[lang] || lang);
       fillCell(cell, block, lang);
@@ -916,8 +922,8 @@ const DATA = [
     COLS.forEach(function (lang) {
       var h = el("div", "hcell lang-" + lang, (META.columnTitles || {})[lang] || lang);
       h.setAttribute("data-lang", lang);
-      if (lang === "tr" && META.trMirror !== false) {
-        h.appendChild(el("span", "mirror", "  (mirrors jp)"));
+      if (lang === TR && META.trMirror !== false) {
+        h.appendChild(el("span", "mirror", "  (mirrors " + SRC + ")"));
       }
       head.appendChild(h);
     });
@@ -994,7 +1000,7 @@ const DATA = [
     var box = $("#legend");
     box.innerHTML = "";
     box.appendChild(el("p", "cap",
-      "Word colours = parts of speech (based on the Japanese) - same class, same colour family. Click a chip to focus that class."));
+      "Word colours = parts of speech (based on the source language) - same class, same colour family. Click a chip to focus that class."));
     var counts = posCounts();
     GROUPS.forEach(function (g) {
       box.appendChild(el("span", "lg", g.label));
@@ -1045,8 +1051,7 @@ const DATA = [
   }
   function applyCols() {
     var n = COLS.filter(function (l) { return state.cols[l]; }).length;
-    $("#lines").style.gridTemplateColumns =
-      "3rem repeat(" + Math.max(n, 1) + ", minmax(0,1fr))";
+    document.documentElement.style.setProperty("--cols", Math.max(n, 1));
     document.querySelectorAll("#lines [data-lang]").forEach(function (c) {
       var lang = c.getAttribute("data-lang");
       if (lang) c.style.display = state.cols[lang] ? "" : "none";
@@ -1063,9 +1068,9 @@ const DATA = [
       if (b.type === "section") { out.push("- " + (b.label || "") + " -"); return; }
       if (b.type === "title" || !b.units) return;
       n += 1;
-      var jp = b.units.map(function (u) { return u.jp || ""; }).join("");
-      var ok = b.src ? (jp === b.src ? "  [= source OK]" : "  [! MISMATCH]") : "";
-      out.push(String(n).padStart(2, " ") + ". " + jp + ok);
+      var src = b.units.map(function (u) { return u[SRC] || ""; }).join("");
+      var ok = b.src ? (src === b.src ? "  [= source OK]" : "  [! MISMATCH]") : "";
+      out.push(String(n).padStart(2, " ") + ". " + src + ok);
     });
     pre.textContent = out.join("\n");
   }
@@ -1103,10 +1108,11 @@ const DATA = [
       var chip = el("span", "chip pos-" + u.pos, (META.posLabels || {})[u.pos] || u.pos);
       row.appendChild(chip);
       row.appendChild(el("span", "nm", name));
-      row.appendChild(el("span", "vjp", u.jp || ""));
-      row.appendChild(el("span", "vtr", u.tr || ""));
-      row.appendChild(el("span", "ven", u.en || ""));
-      row.appendChild(el("span", "vru", u.ru || ""));
+      row.appendChild(el("span", "vsrc", u[SRC] || ""));
+      COLS.forEach(function (lang) {
+        if (lang === SRC) return;
+        row.appendChild(el("span", "vcell v" + lang, u[lang] || ""));
+      });
       row.appendChild(el("span", "vct", "x" + e.count));
       row.addEventListener("click", function () { pin(name); });
       list.appendChild(row);
@@ -1129,7 +1135,7 @@ const DATA = [
     list.appendChild(okLine);
     if (!res.issues.length) {
       list.appendChild(el("div", "valitem ok",
-        "All invariants hold: jp text reconstructs the source, jp/tr mirror is structural, ord arrays are permutations, one POS per name."));
+        "All invariants hold: source text reconstructs the fixation, the mirror is structural, ord arrays are permutations, one POS per name."));
     }
     res.issues.forEach(function (i) {
       list.appendChild(el("div", "valitem " + (i.sev === "err" ? "err" : ""),
@@ -1140,6 +1146,7 @@ const DATA = [
 
   /* ---------- boot ---------- */
   document.addEventListener("DOMContentLoaded", function () {
+    document.documentElement.style.setProperty("--cols", COLS.length);
     $("#appTitle").textContent = META.title || "";
     $("#appSub").textContent = META.subtitle || "";
     $("#appCredit").textContent = META.credit || "";

@@ -1,280 +1,687 @@
 "use strict";
 
-/* Line-aligned starter map: refine one-unit lines into meaning units. */
+/* すきなことだけでいいです — LinguaMap map
+   Source:   sources/source.ja.txt (romaji mirror in source.tr.txt;
+             placed origin in original.tsv with the English text)
+   Fixation: sources/fixation.json (79 lines, stanzas intact)
+   Build:    python3 tools/song.py build --song sukina-koto-dake-de-ii-desu
+
+   units[] stay in SOURCE (jp) word order; en/ru reorder via ord.
+   tr mirrors the source mechanically, so tr cells follow jp order and
+   punctuation. One meaning = one name for the whole song. */
+
 const META = {
-	title: "すきなことだけでいいです — LinguaMap",
-	subtitle: "Parallel word map: 日本語 · Romaji · English · Русский",
-	credit: "Generated from line-aligned expected translations by tools/song.py. One unit per source line; colours and POS are placeholders until word-level segmentation. Repeated refrains share names, so surface-variant warnings are intentional.",
-	columns: ["ru", "en", "jp", "tr"],
-	columnTitles: { ru: "Русский", en: "English", jp: "日本語", tr: "Romaji" },
-	trMirror: true,
-	posLabels: { n: "line (starter map)" },
-	posOrder: ["n"]
+  title: "すきなことだけでいいです — LinguaMap",
+  subtitle: "すきなことだけでいいです · parallel word map: 日本語 · Romaji · English · Русский",
+  credit: "Mapped with the LinguaMap workflow (AGENTS.md): one meaning = one name across all columns · colour = part of speech (based on the Japanese) · romaji mirrors the Japanese word order. Chorus and refrain lines deliberately reuse the same names; the validator reports the resulting duplicate-occurrence warnings as intended.",
+  columns: ["ru", "en", "jp", "tr"],
+  columnTitles: { ru: "Русский", en: "English", jp: "日本語", tr: "Romaji" },
+  sourceKey: "jp",
+  translitKey: "tr",
+  trMirror: true,
+  posLabels: {
+    n: "noun", npr: "proper noun", v: "verb", adj: "i-adj", adjna: "na-adj",
+    adv: "adverb", pron: "pronoun", conj: "conjunction",
+    interj: "interjection", part: "particle", q: "question word"
+  },
+  posOrder: ["n", "npr", "v", "adj", "adjna", "adv", "pron", "conj", "interj", "part", "q"]
 };
 
 const DATA = [
-	{ type: "section", label: "Stanza 1" },
-	{ type: "line", src: "平日は嫌　休みが好き", units: [
-		{ name: "line_i_don_t_like_605988ad", pos: "n", jp: "平日は嫌　休みが好き", tr: "heijitsu wa iya yasumi ga suki", en: "I don’t like weekdays, I like the weekend", ru: "Будни мне не нравятся, зато выходные — да" }
-	] },
-	{ type: "line", src: "仕事は嫌　二度寝が好き", units: [
-		{ name: "line_i_don_t_like_78e65907", pos: "n", jp: "仕事は嫌　二度寝が好き", tr: "shigoto wa iya nidone ga suki", en: "I don’t like work, I like going back to sleep", ru: "Работа мне не нравится, зато люблю снова уснуть" }
-	] },
-	{ type: "line", src: "怠けたまま暮らすの無理", units: [
-		{ name: "line_it_s_impossible_to_3fe83d7c", pos: "n", jp: "怠けたまま暮らすの無理", tr: "namaketa mama kurasu no muri", en: "It’s impossible to live on slacking like this", ru: "Жить всё время в лени не выйдет" }
-	] },
-	{ type: "line", src: "遠のいていく意識", units: [
-		{ name: "line_my_consciousness_recedes_77f6efe2", pos: "n", jp: "遠のいていく意識", tr: "toonoite iku ishiki", en: "My consciousness recedes", ru: "Сознание уплывает всё дальше" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 2" },
-	{ type: "line", src: "野菜は嫌　ハンバーグが好き", units: [
-		{ name: "line_i_don_t_like_4db0090b", pos: "n", jp: "野菜は嫌　ハンバーグが好き", tr: "yasai wa iya hanbaagu ga suki", en: "I don’t like vegetables, I like hamburgers", ru: "Овощи не люблю, зато гамбургеры обожаю" }
-	] },
-	{ type: "line", src: "麦茶は嫌　ジュースが好き", units: [
-		{ name: "line_i_don_t_like_826b90a3", pos: "n", jp: "麦茶は嫌　ジュースが好き", tr: "mugicha wa iya juusu ga suki", en: "I don’t like barley tea, I like juice", ru: "Ячменный чай не люблю, зато сок — да" }
-	] },
-	{ type: "line", src: "甘えんな　でも甘味は好き", units: [
-		{ name: "line_don_t_be_sweet_c06bf454", pos: "n", jp: "甘えんな　でも甘味は好き", tr: "amaenna demo kanmi wa suki", en: "Don’t be sweet on me, but I like sweet tasting things", ru: "Не будь приторным, но сладкое я люблю" }
-	] },
-	{ type: "line", src: "生前の１ページ", units: [
-		{ name: "line_my_lifetime_s_first_a5f4c397", pos: "n", jp: "生前の１ページ", tr: "seizen no ichi-peeji", en: "My lifetime’s first page", ru: "Первая страница моей жизни" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 3" },
-	{ type: "line", src: "好きなことだけ見つめて", units: [
-		{ name: "line_only_looking_at_things_b79134df", pos: "n", jp: "好きなことだけ見つめて", tr: "suki na koto dake mitsumete", en: "Only looking at things I like", ru: "Смотрю лишь на то, что люблю" }
-	] },
-	{ type: "line", src: "だんだん　視力が弱くなる", units: [
-		{ name: "line_gradually_my_eyesight_gets_6f78d419", pos: "n", jp: "だんだん　視力が弱くなる", tr: "dandan shiryoku ga yowaku naru", en: "gradually my eyesight gets worse", ru: "И постепенно зрение слабеет" }
-	] },
-	{ type: "line", src: "好きなことで満たされて", units: [
-		{ name: "line_only_being_filled_with_0de26b98", pos: "n", jp: "好きなことで満たされて", tr: "suki na koto de mitasarete", en: "Only being filled with things I like", ru: "Наполняясь лишь тем, что люблю" }
-	] },
-	{ type: "line", src: "だんだん　頭が悪くなる", units: [
-		{ name: "line_gradually_my_mind_gets_d579c05e", pos: "n", jp: "だんだん　頭が悪くなる", tr: "dandan atama ga waruku naru", en: "gradually my mind gets duller", ru: "И постепенно глупею" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 4" },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "みんな　好きなことが好きなんです", units: [
-		{ name: "line_everyone_likes_the_things_901d5b0e", pos: "n", jp: "みんな　好きなことが好きなんです", tr: "minna suki na koto ga suki na ndesu", en: "Everyone likes the things they like", ru: "Все любят то, что любят" }
-	] },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "みんな　嫌なことは嫌なんです", units: [
-		{ name: "line_everyone_dislikes_the_things_047992cb", pos: "n", jp: "みんな　嫌なことは嫌なんです", tr: "minna iya na koto wa iya na ndesu", en: "Everyone dislikes the things they dislike", ru: "Всем не нравится то, что не нравится" }
-	] },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "ほんと　すきなことだけでいいです", units: [
-		{ name: "line_really_all_i_need_c3a476e8", pos: "n", jp: "ほんと　すきなことだけでいいです", tr: "honto suki na koto dake de ii desu", en: "Really, All I need are the things I like", ru: "Правда, мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "全人類が好きなことやったら", units: [
-		{ name: "line_although_if_all_of_e13ffd20", pos: "n", jp: "全人類が好きなことやったら", tr: "zenjinrui ga suki na koto yattara", en: "Although, if all of humanity just did the things they like,", ru: "Если бы все люди делали лишь то, что любят," }
-	] },
-	{ type: "line", src: "世界は滅亡するけど", units: [
-		{ name: "line_the_world_would_turn_02d9097a", pos: "n", jp: "世界は滅亡するけど", tr: "sekai wa metsubou suru kedo", en: "the world would turn to ruin", ru: "мир бы погиб — и всё же" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 5" },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "君のことが　ほんとに好きなんです", units: [
-		{ name: "line_i_really_like_you_2cbe823c", pos: "n", jp: "君のことが　ほんとに好きなんです", tr: "kimi no koto ga honto ni suki na ndesu", en: "I really like you", ru: "А тебя я правда люблю" }
-	] },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "君は違う誰かが好きなんです", units: [
-		{ name: "line_you_like_someone_else_afa5df6f", pos: "n", jp: "君は違う誰かが好きなんです", tr: "kimi wa chigau dareka ga suki na ndesu", en: "You like someone else", ru: "Но ты любишь кого-то другого" }
-	] },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "やっぱ　それだけじゃ難しいです", units: [
-		{ name: "line_after_all_i_guess_7e4ec405", pos: "n", jp: "やっぱ　それだけじゃ難しいです", tr: "yappa sore dake ja muzukashii desu", en: "After all, I guess it would be pretty difficult to have only that", ru: "Всё же, наверное, только этим не обойтись" }
-	] },
-	{ type: "line", src: "全人類が幸せになったら", units: [
-		{ name: "line_because_if_all_of_422d34be", pos: "n", jp: "全人類が幸せになったら", tr: "zenjinrui ga shiawase ni nattara", en: "because If all of humanity was happy,", ru: "Ведь если бы все люди стали счастливы," }
-	] },
-	{ type: "line", src: "宇宙が迷惑するから", units: [
-		{ name: "line_the_rest_of_the_03ac3244", pos: "n", jp: "宇宙が迷惑するから", tr: "uchuu ga meiwaku suru kara", en: "the rest of the universe would be troubled", ru: "остальной вселенной пришлось бы туго" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 6" },
-	{ type: "line", src: "天使は嫌　悪魔が好き", units: [
-		{ name: "line_i_don_t_like_d0e8cf86", pos: "n", jp: "天使は嫌　悪魔が好き", tr: "tenshi wa iya akuma ga suki", en: "I don’t like angels, I like demons", ru: "Ангелов не люблю, зато демонов — да" }
-	] },
-	{ type: "line", src: "天国は嫌　地獄が好き", units: [
-		{ name: "line_i_don_t_like_2828d6d9", pos: "n", jp: "天国は嫌　地獄が好き", tr: "tengoku wa iya jigoku ga suki", en: "I don’t like heaven, I like hell", ru: "Рай не люблю, зато ад — да" }
-	] },
-	{ type: "line", src: "あべこべだった　君の趣味", units: [
-		{ name: "line_your_tastes_were_always_dd0f53af", pos: "n", jp: "あべこべだった　君の趣味", tr: "abekobe datta kimi no shumi", en: "Your tastes were always the opposite", ru: "Твои вкусы были всему наперекор" }
-	] },
-	{ type: "line", src: "人それぞれのクレイジー", units: [
-		{ name: "line_people_are_all_crazy_9c4bb1d7", pos: "n", jp: "人それぞれのクレイジー", tr: "hito sorezore no kureijii", en: "People are all crazy in their own ways", ru: "У каждого своё безумие" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 7" },
-	{ type: "line", src: "生物は嫌　機械が好き", units: [
-		{ name: "line_i_don_t_like_a638cb23", pos: "n", jp: "生物は嫌　機械が好き", tr: "seibutsu wa iya kikai ga suki", en: "I don’t like living things, I like machines", ru: "Живое не люблю, зато машины — да" }
-	] },
-	{ type: "line", src: "リアルは嫌　虚像が好き", units: [
-		{ name: "line_i_don_t_like_81675726", pos: "n", jp: "リアルは嫌　虚像が好き", tr: "riaru wa iya kyozou ga suki", en: "I don’t like the real world, I like the virtual", ru: "Реальность не люблю, зато вымысел — да" }
-	] },
-	{ type: "line", src: "偏っていた　君の趣味", units: [
-		{ name: "line_your_tastes_were_always_dc634246", pos: "n", jp: "偏っていた　君の趣味", tr: "katayotte ita kimi no shumi", en: "Your tastes were always biased", ru: "Твои вкусы были однобоки" }
-	] },
-	{ type: "line", src: "悪化して思考停止", units: [
-		{ name: "line_deteriorating_and_ceasing_to_8a8003ed", pos: "n", jp: "悪化して思考停止", tr: "akka shite shikouteishi", en: "deteriorating and ceasing to think", ru: "Всё ухудшалось, разум замер" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 8" },
-	{ type: "line", src: "好きなことに囲まれて", units: [
-		{ name: "line_surrounded_by_the_things_922534b6", pos: "n", jp: "好きなことに囲まれて", tr: "suki na koto ni kakomarete", en: "Surrounded by the things I like", ru: "Окружён лишь тем, что люблю," }
-	] },
-	{ type: "line", src: "嫌なことが許せなくなる", units: [
-		{ name: "line_i_ve_become_unforgiving_cd425de9", pos: "n", jp: "嫌なことが許せなくなる", tr: "iya na koto ga yurusenaku naru", en: "I’ve become unforgiving to the things I don’t like", ru: "и уже не могу терпеть то, что не люблю" }
-	] },
-	{ type: "line", src: "好きなことだけで生きて", units: [
-		{ name: "line_living_only_with_the_48f2c40b", pos: "n", jp: "好きなことだけで生きて", tr: "suki na koto dake de ikite", en: "Living only with the things I like", ru: "Живу лишь тем, что люблю," }
-	] },
-	{ type: "line", src: "どこかの誰かに恨まれる", units: [
-		{ name: "line_i_m_resented_by_b8fda9cb", pos: "n", jp: "どこかの誰かに恨まれる", tr: "dokoka no dareka ni uramareru", en: "I'm resented by someone, somewhere", ru: "и кто-то где-то держит на меня обиду" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 9" },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "みんな　好きなことが好きなんです", units: [
-		{ name: "line_everyone_likes_the_things_901d5b0e", pos: "n", jp: "みんな　好きなことが好きなんです", tr: "minna suki na koto ga suki na ndesu", en: "Everyone likes the things they like", ru: "Все любят то, что любят" }
-	] },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "みんな　嫌なことは嫌なんです", units: [
-		{ name: "line_everyone_dislikes_the_things_047992cb", pos: "n", jp: "みんな　嫌なことは嫌なんです", tr: "minna iya na koto wa iya na ndesu", en: "Everyone dislikes the things they dislike", ru: "Всем не нравится то, что не нравится" }
-	] },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "ほんと　すきなことだけでいいです", units: [
-		{ name: "line_really_all_i_need_c3a476e8", pos: "n", jp: "ほんと　すきなことだけでいいです", tr: "honto suki na koto dake de ii desu", en: "Really, All I need are the things I like", ru: "Правда, мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "全人類が好きなことやったら", units: [
-		{ name: "line_although_if_all_of_e13ffd20", pos: "n", jp: "全人類が好きなことやったら", tr: "zenjinrui ga suki na koto yattara", en: "Although, if all of humanity just did the things they like,", ru: "Если бы все люди делали лишь то, что любят," }
-	] },
-	{ type: "line", src: "世界は滅亡するけど", units: [
-		{ name: "line_the_world_would_turn_02d9097a", pos: "n", jp: "世界は滅亡するけど", tr: "sekai wa metsubou suru kedo", en: "the world would turn to ruin", ru: "мир бы погиб — и всё же" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 10" },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "ずっと　仲間と笑っていたいんです", units: [
-		{ name: "line_i_just_want_to_e8784b91", pos: "n", jp: "ずっと　仲間と笑っていたいんです", tr: "zutto nakama to waratte itai ndesu", en: "I just want to smile with my friends all the time", ru: "Мне хочется всё время смеяться с друзьями" }
-	] },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "だけど　仲間が全然いないんです", units: [
-		{ name: "line_although_i_have_no_1c5cde8f", pos: "n", jp: "だけど　仲間が全然いないんです", tr: "dakedo nakama ga zenzen inai ndesu", en: "Although I have no friends to do that with", ru: "Но друзей у меня совсем нет" }
-	] },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "やっぱ　それだけじゃ難しいです", units: [
-		{ name: "line_after_all_i_guess_7e4ec405", pos: "n", jp: "やっぱ　それだけじゃ難しいです", tr: "yappa sore dake ja muzukashii desu", en: "After all, I guess it would be pretty difficult to have only that", ru: "Всё же, наверное, только этим не обойтись" }
-	] },
-	{ type: "line", src: "全人類の願いが叶ったら", units: [
-		{ name: "line_because_if_all_of_ad9ced09", pos: "n", jp: "全人類の願いが叶ったら", tr: "zenjinrui no negai ga kanattara", en: "because if all of humanity's wishes were granted,", ru: "Ведь если бы исполнились желания всех людей," }
-	] },
-	{ type: "line", src: "地球が爆発するから", units: [
-		{ name: "line_the_world_would_explode_9ddd199b", pos: "n", jp: "地球が爆発するから", tr: "chikyuu ga bakuhatsu suru kara", en: "the world would explode", ru: "Земля бы взорвалась" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 11" },
-	{ type: "line", src: "待ち合わせの約束があった", units: [
-		{ name: "line_i_had_promised_to_d320751a", pos: "n", jp: "待ち合わせの約束があった", tr: "machiawase no yakusoku ga atta", en: "I had promised to meet someone", ru: "Я обещал встретиться с кем-то" }
-	] },
-	{ type: "line", src: "雨が嫌だから　行かなかった", units: [
-		{ name: "line_but_because_i_don_734b54a9", pos: "n", jp: "雨が嫌だから　行かなかった", tr: "ame ga iya dakara ikanakatta", en: "but because I don’t like the rain, I didn’t go", ru: "Но не люблю дождь — и не пошёл" }
-	] },
-	{ type: "line", src: "出かけてたら　良いことあったかな", units: [
-		{ name: "line_i_wonder_if_something_e856e2a9", pos: "n", jp: "出かけてたら　良いことあったかな", tr: "dekaketetara ii koto atta kana", en: "I wonder if something good would have happened if I went", ru: "Если бы вышел, может, случилось бы что-то хорошее?" }
-	] },
-	{ type: "line", src: "今際の際の走馬灯", units: [
-		{ name: "line_my_life_flashes_before_3a658ae4", pos: "n", jp: "今際の際の走馬灯", tr: "imawanokiwa no soumatou", en: "My life flashes before my eyes in my last moments", ru: "В последний миг вся жизнь перед глазами" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 12" },
-	{ type: "line", src: "好きなことだけでいいです…", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "好きなことだけでいいです…", tr: "suki na koto dake de ii desu …", en: "All I need are the things I like...", ru: "Мне хватит только того, что люблю…" }
-	] },
-	{ type: "line", src: "全人類が好きなことやったら", units: [
-		{ name: "line_although_if_all_of_e13ffd20", pos: "n", jp: "全人類が好きなことやったら", tr: "zenjinrui ga suki na koto yattara", en: "Although, if all of humanity just did the things they like,", ru: "Если бы все люди делали лишь то, что любят," }
-	] },
-	{ type: "line", src: "世界は滅亡するけど", units: [
-		{ name: "line_the_world_would_turn_02d9097a", pos: "n", jp: "世界は滅亡するけど", tr: "sekai wa metsubou suru kedo", en: "the world would turn to ruin", ru: "мир бы погиб — и всё же" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 13" },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "みんな　好きなことが好きでした", units: [
-		{ name: "line_everyone_just_liked_the_db140c5a", pos: "n", jp: "みんな　好きなことが好きでした", tr: "minna suki na koto ga suki deshita", en: "Everyone just liked the things they liked", ru: "Все любили то, что любили" }
-	] },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "みんな　嫌なことは嫌でした", units: [
-		{ name: "line_everyone_disliked_the_things_24aa3722", pos: "n", jp: "みんな　嫌なことは嫌でした", tr: "minna iya na koto wa iya deshita", en: "Everyone disliked the things they disliked", ru: "Всем не нравилось то, что не нравилось" }
-	] },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "ほんと　すきなことだけでいいです", units: [
-		{ name: "line_really_all_i_need_c3a476e8", pos: "n", jp: "ほんと　すきなことだけでいいです", tr: "honto suki na koto dake de ii desu", en: "Really, all I need are the things I like", ru: "Правда, мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "全人類が好きなことやったら", units: [
-		{ name: "line_although_if_all_of_e13ffd20", pos: "n", jp: "全人類が好きなことやったら", tr: "zenjinrui ga suki na koto yattara", en: "Although, when all of humanity just did the things they liked,", ru: "Если бы все люди делали лишь то, что любят," }
-	] },
-	{ type: "line", src: "世界は滅亡したけど", units: [
-		{ name: "line_the_world_turned_to_771b473a", pos: "n", jp: "世界は滅亡したけど", tr: "sekai wa metsubou shita kedo", en: "the world turned to ruin", ru: "мир погиб — и всё же" }
-	] },
-	{ type: "gap" },
-	{ type: "section", label: "Stanza 14" },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "君のことが　ほんとに好きでした", units: [
-		{ name: "line_i_really_liked_you_ac1a16c4", pos: "n", jp: "君のことが　ほんとに好きでした", tr: "kimi no koto ga honto ni suki deshita", en: "I really liked you", ru: "А тебя я правда любил" }
-	] },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "君は違う誰かが好きでした", units: [
-		{ name: "line_you_liked_someone_else_2be834ea", pos: "n", jp: "君は違う誰かが好きでした", tr: "kimi wa chigau dareka ga suki deshita", en: "You liked someone else", ru: "Но сердце твоё было с другим" }
-	] },
-	{ type: "line", src: "すきなことだけでいいです", units: [
-		{ name: "line_all_i_need_are_8bdfabd0", pos: "n", jp: "すきなことだけでいいです", tr: "suki na koto dake de ii desu", en: "All I need are the things I like", ru: "Мне хватит только того, что люблю" }
-	] },
-	{ type: "line", src: "やっぱ　それだけじゃ難しいです", units: [
-		{ name: "line_after_all_i_guess_7e4ec405", pos: "n", jp: "やっぱ　それだけじゃ難しいです", tr: "yappa sore dake ja muzukashii desu", en: "After all I guess, it would be pretty difficult to have only that", ru: "Всё же, наверное, только этим не обойтись" }
-	] },
-	{ type: "line", src: "全人類が幸せになったら", units: [
-		{ name: "line_because_if_all_of_422d34be", pos: "n", jp: "全人類が幸せになったら", tr: "zenjinrui ga shiawase ni nattara", en: "because If all of humanity was happy,", ru: "Ведь если бы все люди стали счастливы," }
-	] },
-	{ type: "line", src: "宇宙が迷惑するから", units: [
-		{ name: "line_the_rest_of_the_03ac3244", pos: "n", jp: "宇宙が迷惑するから", tr: "uchuu ga meiwaku suru kara", en: "the rest of the universe would be troubled", ru: "остальной вселенной пришлось бы туго" }
-	] }
+  { type: "section", label: "Verse 1 — weekdays vs. weekend" },
+
+  /* no.1 — 平日は嫌　休みが好き */
+  { type: "line", src: "平日は嫌　休みが好き", units: [
+    { name: "weekday", pos: "n", jp: "平日は", tr: "heijitsu wa", en: "weekdays", ru: "будни" },
+    { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "holiday", pos: "n", jp: "休みが", tr: "yasumi ga", en: "the weekend", ru: "выходной" },
+    { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.2 — 仕事は嫌　二度寝が好き */
+  { type: "line", src: "仕事は嫌　二度寝が好き", units: [
+    { name: "work", pos: "n", jp: "仕事は", tr: "shigoto wa", en: "work", ru: "работу" },
+    { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "second_sleep", pos: "n", jp: "二度寝が", tr: "nidone ga", en: "going back to sleep", ru: "поспать ещё" },
+    { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.3 — 怠けたまま暮らすの無理 */
+  { type: "line", src: "怠けたまま暮らすの無理", units: [
+    { name: "lazy", pos: "v", jp: "怠けたまま", tr: "namaketa mama", en: "lazily", ru: "лениво" },
+    { name: "living", pos: "v", jp: "暮らすの", tr: "kurasu no", en: "living", ru: "жить" },
+    { name: "impossible", pos: "adjna", jp: "無理", tr: "muri", en: "is impossible", ru: "невозможно" }
+  ]
+  },
+
+  /* no.4 — 遠のいていく意識 */
+  { type: "line", src: "遠のいていく意識", units: [
+    { name: "distant", pos: "v", jp: "遠のいていく", tr: "toonoite iku", en: "recedes", ru: "уходит" },
+    { name: "consciousness", pos: "n", jp: "意識", tr: "ishiki", en: "my consciousness", ru: "сознание" }
+  ]
+  },
+
+  { type: "section", label: "Verse 2 — vegetables and sweets" },
+
+  /* no.5 — 野菜は嫌　ハンバーグが好き */
+  { type: "line", src: "野菜は嫌　ハンバーグが好き", units: [
+    { name: "vegetable", pos: "n", jp: "野菜は", tr: "yasai wa", en: "vegetables", ru: "овощи" },
+    { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "hamburger", pos: "n", jp: "ハンバーグが", tr: "hanbaagu ga", en: "hamburgers", ru: "бургеры" },
+    { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.6 — 麦茶は嫌　ジュースが好き */
+  { type: "line", src: "麦茶は嫌　ジュースが好き", units: [
+    { name: "barley_tea", pos: "n", jp: "麦茶は", tr: "mugicha wa", en: "barley tea", ru: "ячменный чай" },
+    { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "juice", pos: "n", jp: "ジュースが", tr: "juusu ga", en: "juice", ru: "сок" },
+    { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.7 — 甘えんな　でも甘味は好き */
+  { type: "line", src: "甘えんな　でも甘味は好き", units: [
+    { name: "dont_be_sweet", pos: "v", jp: "甘えんな　", tr: "amaenna ", en: "don't be sweet on me,", ru: "не будь со мной милым," },
+    { name: "but", pos: "conj", jp: "でも", tr: "demo", en: "but", ru: "но" },
+    { name: "sweetness", pos: "n", jp: "甘味は", tr: "kanmi wa", en: "sweet things", ru: "сладкое" },
+    { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ], ord: { en: ["dont_be_sweet", "but", "like", "sweetness"], ru: ["dont_be_sweet", "but", "like", "sweetness"] }
+  },
+
+  /* no.8 — 生前の１ページ */
+  { type: "line", src: "生前の１ページ", units: [
+    { name: "lifetime", pos: "n", jp: "生前の", tr: "seizen no", en: "from my life", ru: "из моей жизни" },
+    { name: "one_page", pos: "n", jp: "１ページ", tr: "ichi-peeji", en: "the first page", ru: "первая страница" }
+  ]
+  },
+
+  { type: "section", label: "Pre-chorus — staring only at what I like" },
+
+  /* no.9 — 好きなことだけ見つめて */
+  { type: "line", src: "好きなことだけ見つめて", units: [
+    { name: "i_like", pos: "n", jp: "好きなこと", tr: "suki na koto", en: "things I like,", ru: "то, что мне нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "stare_at", pos: "v", jp: "見つめて", tr: "mitsumete", en: "I look at", ru: "смотрю на" }
+  ], ord: { en: ["only", "i_like", "stare_at"], ru: ["only", "i_like", "stare_at"] }
+  },
+
+  /* no.10 — だんだん　視力が弱くなる */
+  { type: "line", src: "だんだん　視力が弱くなる", units: [
+    { name: "little_by_little", pos: "adv", jp: "だんだん　", tr: "dandan ", en: "gradually", ru: "постепенно" },
+    { name: "eyesight", pos: "n", jp: "視力が", tr: "shiryoku ga", en: "my eyesight", ru: "зрение" },
+    { name: "weaken", pos: "v", jp: "弱くなる", tr: "yowaku naru", en: "grows weaker", ru: "слабеет" }
+  ]
+  },
+
+  /* no.11 — 好きなことで満たされて */
+  { type: "line", src: "好きなことで満たされて", units: [
+    { name: "i_like", pos: "n", jp: "好きなことで", tr: "suki na koto de", en: "with things I like", ru: "тем, что нравится," },
+    { name: "filling", pos: "v", jp: "満たされて", tr: "mitasarete", en: "I am filled", ru: "наполняюсь" }
+  ], ord: { en: ["filling", "i_like"], ru: ["filling", "i_like"] }
+  },
+
+  /* no.12 — だんだん　頭が悪くなる */
+  { type: "line", src: "だんだん　頭が悪くなる", units: [
+    { name: "little_by_little", pos: "adv", jp: "だんだん　", tr: "dandan ", en: "gradually", ru: "постепенно" },
+    { name: "head", pos: "n", jp: "頭が", tr: "atama ga", en: "my mind", ru: "голова" },
+    { name: "dull", pos: "v", jp: "悪くなる", tr: "waruku naru", en: "grows duller", ru: "тупеет" }
+  ]
+  },
+
+  { type: "section", label: "Chorus — only what I like" },
+
+  /* no.13 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.14 — みんな　好きなことが好きなんです */
+  { type: "line", src: "みんな　好きなことが好きなんです", units: [
+    { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
+    { name: "i_like", pos: "n", jp: "好きなことが", tr: "suki na koto ga", en: "the things they like", ru: "то, что нравится," },
+    { name: "like", pos: "adjna", jp: "好きなんです", tr: "suki nan desu", en: "they love", ru: "они любят" }
+  ]
+  },
+
+  /* no.15 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.16 — みんな　嫌なことは嫌なんです */
+  { type: "line", src: "みんな　嫌なことは嫌なんです", units: [
+    { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
+    { name: "dislike", pos: "n", jp: "嫌なことは", tr: "iya na koto wa", en: "the things they dislike", ru: "то, что не нравится," },
+    { name: "hate", pos: "adjna", jp: "嫌なんです", tr: "iya nan desu", en: "they hate", ru: "они ненавидят" }
+  ]
+  },
+
+  /* no.17 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.18 — ほんと　すきなことだけでいいです */
+  { type: "line", src: "ほんと　すきなことだけでいいです", units: [
+    { name: "really", pos: "adv", jp: "ほんと　", tr: "honto ", en: "really", ru: "правда" },
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["really", "only", "i_like", "thats_fine"] }
+  },
+
+  /* no.19 — 全人類が好きなことやったら */
+  { type: "line", src: "全人類が好きなことやったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類が", tr: "zenjinrui ga", en: "all of humanity", ru: "всё человечество" },
+    { name: "i_like", pos: "n", jp: "好きなこと", tr: "suki na koto", en: "did the things they like,", ru: "сделало то, что нравится," },
+    { name: "if", pos: "v", jp: "やったら", tr: "yattara", en: "if", ru: "если" }
+  ], ord: { en: ["if", "humanity", "i_like"], ru: ["if", "humanity", "i_like"] }
+  },
+
+  /* no.20 — 世界は滅亡するけど */
+  { type: "line", src: "世界は滅亡するけど", units: [
+    { name: "world", pos: "n", jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
+    { name: "perish", pos: "v", jp: "滅亡する", tr: "metsubou suru", en: "would turn to ruin", ru: "погиб бы," },
+    { name: "though", pos: "conj", jp: "けど", tr: "kedo", en: "though", ru: "но" }
+  ], ord: { en: ["though", "world", "perish"], ru: ["though", "world", "perish"] }
+  },
+
+  { type: "section", label: "Verse 3 — you and someone else" },
+
+  /* no.21 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.22 — 君のことが　ほんとに好きなんです */
+  { type: "line", src: "君のことが　ほんとに好きなんです", units: [
+    { name: "about_you", pos: "n", jp: "君のことが　", tr: "kimi no koto ga ", en: "about you", ru: "в тебе" },
+    { name: "really", pos: "adv", jp: "ほんとに", tr: "honto ni", en: "really", ru: "по-настоящему" },
+    { name: "like", pos: "adjna", jp: "好きなんです", tr: "suki nan desu", en: "I like", ru: "люблю" }
+  ]
+  },
+
+  /* no.23 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.24 — 君は違う誰かが好きなんです */
+  { type: "line", src: "君は違う誰かが好きなんです", units: [
+    { name: "you", pos: "pron", jp: "君は", tr: "kimi wa", en: "you", ru: "ты" },
+    { name: "another", pos: "n", jp: "違う誰かが", tr: "chigau dareka ga", en: "someone else", ru: "кто-то другой" },
+    { name: "like", pos: "adjna", jp: "好きなんです", tr: "suki nan desu", en: "you like", ru: "тебе нравится" }
+  ]
+  },
+
+  /* no.25 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  { type: "section", label: "Bridge — if everyone did what they like" },
+
+  /* no.26 — やっぱ　それだけじゃ難しいです */
+  { type: "line", src: "やっぱ　それだけじゃ難しいです", units: [
+    { name: "after_all", pos: "adv", jp: "やっぱ　", tr: "yappa ", en: "after all", ru: "в конце концов" },
+    { name: "only_that", pos: "adv", jp: "それだけじゃ", tr: "sore dake ja", en: "only that", ru: "только это" },
+    { name: "hard", pos: "adj", jp: "難しいです", tr: "muzukashii desu", en: "is difficult", ru: "сложно" }
+  ]
+  },
+
+  /* no.27 — 全人類が幸せになったら */
+  { type: "line", src: "全人類が幸せになったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類が", tr: "zenjinrui ga", en: "all of humanity", ru: "всё человечество" },
+    { name: "happy", pos: "adjna", jp: "幸せに", tr: "shiawase ni", en: "became happy,", ru: "стало счастливым," },
+    { name: "if", pos: "v", jp: "なったら", tr: "nattara", en: "if", ru: "если" }
+  ], ord: { en: ["if", "humanity", "happy"], ru: ["if", "humanity", "happy"] }
+  },
+
+  /* no.28 — 宇宙が迷惑するから */
+  { type: "line", src: "宇宙が迷惑するから", units: [
+    { name: "universe", pos: "n", jp: "宇宙が", tr: "uchuu ga", en: "the universe", ru: "вселенная" },
+    { name: "trouble", pos: "v", jp: "迷惑する", tr: "meiwaku suru", en: "would be troubled", ru: "возмутилась бы," },
+    { name: "because", pos: "conj", jp: "から", tr: "kara", en: "because", ru: "потому что" }
+  ], ord: { en: ["because", "universe", "trouble"], ru: ["because", "universe", "trouble"] }
+  },
+
+  { type: "section", label: "Verse 4 — tastes" },
+
+  /* no.29 — 天使は嫌　悪魔が好き */
+  { type: "line", src: "天使は嫌　悪魔が好き", units: [
+    { name: "angel", pos: "n", jp: "天使は", tr: "tenshi wa", en: "angels", ru: "ангелы" },
+    { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "demon", pos: "n", jp: "悪魔が", tr: "akuma ga", en: "demons", ru: "демоны" },
+    { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.30 — 天国は嫌　地獄が好き */
+  { type: "line", src: "天国は嫌　地獄が好き", units: [
+    { name: "heaven", pos: "n", jp: "天国は", tr: "tengoku wa", en: "heaven", ru: "рай" },
+    { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "hell", pos: "n", jp: "地獄が", tr: "jigoku ga", en: "hell", ru: "ад" },
+    { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.31 — あべこべだった　君の趣味 */
+  { type: "line", src: "あべこべだった　君の趣味", units: [
+    { name: "upside_down", pos: "adjna", jp: "あべこべだった　", tr: "abekobe datta ", en: "were the opposite", ru: "были наоборот" },
+    { name: "your_taste", pos: "n", jp: "君の趣味", tr: "kimi no shumi", en: "your tastes", ru: "твои вкусы" }
+  ]
+  },
+
+  /* no.32 — 人それぞれのクレイジー */
+  { type: "line", src: "人それぞれのクレイジー", units: [
+    { name: "each_person", pos: "n", jp: "人それぞれの", tr: "hito sorezore no", en: "each person's", ru: "у каждого своё" },
+    { name: "crazy", pos: "n", jp: "クレイジー", tr: "kureijii", en: "crazy", ru: "сумасшествие" }
+  ]
+  },
+
+  { type: "section", label: "Verse 5 — living things, the real, the virtual" },
+
+  /* no.33 — 生物は嫌　機械が好き */
+  { type: "line", src: "生物は嫌　機械が好き", units: [
+    { name: "creature", pos: "n", jp: "生物は", tr: "seibutsu wa", en: "living things", ru: "живое" },
+    { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "machine", pos: "n", jp: "機械が", tr: "kikai ga", en: "machines", ru: "машины" },
+    { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.34 — リアルは嫌　虚像が好き */
+  { type: "line", src: "リアルは嫌　虚像が好き", units: [
+    { name: "real", pos: "n", jp: "リアルは", tr: "riaru wa", en: "the real", ru: "реальное" },
+    { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
+    { name: "virtual", pos: "n", jp: "虚像が", tr: "kyozou ga", en: "the virtual", ru: "иллюзию" },
+    { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
+  ]
+  },
+
+  /* no.35 — 偏っていた　君の趣味 */
+  { type: "line", src: "偏っていた　君の趣味", units: [
+    { name: "biased", pos: "v", jp: "偏っていた　", tr: "katayotte ita ", en: "were biased", ru: "были однобоки" },
+    { name: "your_taste", pos: "n", jp: "君の趣味", tr: "kimi no shumi", en: "your tastes", ru: "твои вкусы" }
+  ]
+  },
+
+  /* no.36 — 悪化して思考停止 */
+  { type: "line", src: "悪化して思考停止", units: [
+    { name: "worsening", pos: "v", jp: "悪化して", tr: "akka shite", en: "worsening", ru: "ухудшаясь" },
+    { name: "thinking_stops", pos: "v", jp: "思考停止", tr: "shikouteishi", en: "thinking stops", ru: "мышление останавливается" }
+  ]
+  },
+
+  { type: "section", label: "Pre-chorus 2 — surrounded by likes" },
+
+  /* no.37 — 好きなことに囲まれて */
+  { type: "line", src: "好きなことに囲まれて", units: [
+    { name: "surrounded", pos: "v", jp: "好きなことに囲まれて", tr: "suki na koto ni kakomarete", en: "surrounded by things I like", ru: "окружённый тем, что нравится" }
+  ]
+  },
+
+  /* no.38 — 嫌なことが許せなくなる */
+  { type: "line", src: "嫌なことが許せなくなる", units: [
+    { name: "unforgiving", pos: "v", jp: "嫌なことが許せなくなる", tr: "iya na koto ga yurusenaku naru", en: "I stop forgiving what I dislike", ru: "перестаю прощать то, что не нравится" }
+  ]
+  },
+
+  /* no.39 — 好きなことだけで生きて */
+  { type: "line", src: "好きなことだけで生きて", units: [
+    { name: "living_only", pos: "v", jp: "好きなことだけで生きて", tr: "suki na koto dake de ikite", en: "living only with what I like", ru: "жить только тем, что нравится" }
+  ]
+  },
+
+  /* no.40 — どこかの誰かに恨まれる */
+  { type: "line", src: "どこかの誰かに恨まれる", units: [
+    { name: "resented", pos: "v", jp: "どこかの誰かに恨まれる", tr: "dokoka no dareka ni uramareru", en: "resented by someone, somewhere", ru: "кто-то где-то меня ненавидит" }
+  ]
+  },
+
+  { type: "section", label: "Chorus — only what I like (reprise)" },
+
+  /* no.41 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.42 — みんな　好きなことが好きなんです */
+  { type: "line", src: "みんな　好きなことが好きなんです", units: [
+    { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
+    { name: "i_like", pos: "n", jp: "好きなことが", tr: "suki na koto ga", en: "the things they like", ru: "то, что нравится," },
+    { name: "like", pos: "adjna", jp: "好きなんです", tr: "suki nan desu", en: "they love", ru: "они любят" }
+  ]
+  },
+
+  /* no.43 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.44 — みんな　嫌なことは嫌なんです */
+  { type: "line", src: "みんな　嫌なことは嫌なんです", units: [
+    { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
+    { name: "dislike", pos: "n", jp: "嫌なことは", tr: "iya na koto wa", en: "the things they dislike", ru: "то, что не нравится," },
+    { name: "hate", pos: "adjna", jp: "嫌なんです", tr: "iya nan desu", en: "they hate", ru: "они ненавидят" }
+  ]
+  },
+
+  /* no.45 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.46 — ほんと　すきなことだけでいいです */
+  { type: "line", src: "ほんと　すきなことだけでいいです", units: [
+    { name: "really", pos: "adv", jp: "ほんと　", tr: "honto ", en: "really", ru: "правда" },
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["really", "only", "i_like", "thats_fine"] }
+  },
+
+  /* no.47 — 全人類が好きなことやったら */
+  { type: "line", src: "全人類が好きなことやったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類が", tr: "zenjinrui ga", en: "all of humanity", ru: "всё человечество" },
+    { name: "i_like", pos: "n", jp: "好きなこと", tr: "suki na koto", en: "did the things they like,", ru: "сделало то, что нравится," },
+    { name: "if", pos: "v", jp: "やったら", tr: "yattara", en: "if", ru: "если" }
+  ], ord: { en: ["if", "humanity", "i_like"], ru: ["if", "humanity", "i_like"] }
+  },
+
+  /* no.48 — 世界は滅亡するけど */
+  { type: "line", src: "世界は滅亡するけど", units: [
+    { name: "world", pos: "n", jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
+    { name: "perish", pos: "v", jp: "滅亡する", tr: "metsubou suru", en: "would turn to ruin", ru: "погиб бы," },
+    { name: "though", pos: "conj", jp: "けど", tr: "kedo", en: "though", ru: "но" }
+  ], ord: { en: ["though", "world", "perish"], ru: ["though", "world", "perish"] }
+  },
+
+  { type: "section", label: "Verse 6 — friends" },
+
+  /* no.49 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.50 — ずっと　仲間と笑っていたいんです */
+  { type: "line", src: "ずっと　仲間と笑っていたいんです", units: [
+    { name: "always", pos: "adv", jp: "ずっと　", tr: "zutto ", en: "all the time", ru: "всё время" },
+    { name: "friends", pos: "n", jp: "仲間と", tr: "nakama to", en: "with my friends", ru: "с друзьями" },
+    { name: "want_smile", pos: "v", jp: "笑っていたいんです", tr: "waratte itai n desu", en: "I want to smile", ru: "хочу улыбаться" }
+  ], ord: { en: ["friends", "always", "want_smile"], ru: ["friends", "always", "want_smile"] }
+  },
+
+  /* no.51 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.52 — だけど　仲間が全然いないんです */
+  { type: "line", src: "だけど　仲間が全然いないんです", units: [
+    { name: "but", pos: "conj", jp: "だけど　", tr: "dakedo ", en: "but", ru: "но" },
+    { name: "friends", pos: "n", jp: "仲間が", tr: "nakama ga", en: "my friends", ru: "друзья" },
+    { name: "not_at_all", pos: "adv", jp: "全然", tr: "zenzen", en: "at all", ru: "совсем" },
+    { name: "have", pos: "v", jp: "いないんです", tr: "inai n desu", en: "are not there", ru: "не рядом" }
+  ]
+  },
+
+  /* no.53 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  { type: "section", label: "Bridge 2 — wishes" },
+
+  /* no.54 — やっぱ　それだけじゃ難しいです */
+  { type: "line", src: "やっぱ　それだけじゃ難しいです", units: [
+    { name: "after_all", pos: "adv", jp: "やっぱ　", tr: "yappa ", en: "after all", ru: "в конце концов" },
+    { name: "only_that", pos: "adv", jp: "それだけじゃ", tr: "sore dake ja", en: "only that", ru: "только это" },
+    { name: "hard", pos: "adj", jp: "難しいです", tr: "muzukashii desu", en: "is difficult", ru: "сложно" }
+  ]
+  },
+
+  /* no.55 — 全人類の願いが叶ったら */
+  { type: "line", src: "全人類の願いが叶ったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類の", tr: "zenjinrui no", en: "all of humanity's", ru: "всего человечества" },
+    { name: "wish", pos: "n", jp: "願いが", tr: "negai ga", en: "wishes", ru: "желания" },
+    { name: "granted", pos: "v", jp: "叶ったら", tr: "kanattara", en: "were granted,", ru: "сбылись бы," }
+  ], ord: { ru: ["wish", "humanity", "granted"] }
+  },
+
+  /* no.56 — 地球が爆発するから */
+  { type: "line", src: "地球が爆発するから", units: [
+    { name: "earth", pos: "n", jp: "地球が", tr: "chikyuu ga", en: "the earth", ru: "земля" },
+    { name: "explode", pos: "v", jp: "爆発する", tr: "bakuhatsu suru", en: "would explode", ru: "взорвалась бы," },
+    { name: "because", pos: "conj", jp: "から", tr: "kara", en: "because", ru: "потому что" }
+  ], ord: { en: ["because", "earth", "explode"], ru: ["because", "earth", "explode"] }
+  },
+
+  { type: "section", label: "Outro — the promise and the rain" },
+
+  /* no.57 — 待ち合わせの約束があった */
+  { type: "line", src: "待ち合わせの約束があった", units: [
+    { name: "meeting", pos: "n", jp: "待ち合わせの約束が", tr: "machiawase no yakusoku ga", en: "a promise to meet", ru: "обещание встретиться" },
+    { name: "there_was", pos: "v", jp: "あった", tr: "atta", en: "I had made", ru: "было" }
+  ]
+  },
+
+  /* no.58 — 雨が嫌だから　行かなかった */
+  { type: "line", src: "雨が嫌だから　行かなかった", units: [
+    { name: "rain", pos: "n", jp: "雨が嫌だから　", tr: "ame ga iya dakara ", en: "because I dislike the rain,", ru: "потому что ненавижу дождь," },
+    { name: "not_go", pos: "v", jp: "行かなかった", tr: "ikanakatta", en: "I did not go", ru: "не пошёл" }
+  ]
+  },
+
+  /* no.59 — 出かけてたら　良いことあったかな */
+  { type: "line", src: "出かけてたら　良いことあったかな", units: [
+    { name: "if_went", pos: "v", jp: "出かけてたら　", tr: "dekaketetara ", en: "if I had gone out", ru: "если бы вышел" },
+    { name: "good_thing", pos: "n", jp: "良いこと", tr: "ii koto", en: "something good", ru: "что-то хорошее" },
+    { name: "would_have_happened", pos: "v", jp: "あったかな", tr: "atta kana", en: "would have happened", ru: "случилось бы" }
+  ]
+  },
+
+  /* no.60 — 今際の際の走馬灯 */
+  { type: "line", src: "今際の際の走馬灯", units: [
+    { name: "last_moment", pos: "n", jp: "今際の際の", tr: "imawakiwa no", en: "in my last moments", ru: "в последний миг" },
+    { name: "life_flashes", pos: "n", jp: "走馬灯", tr: "soumatou", en: "my life flashes before my eyes", ru: "жизнь проносится перед глазами" }
+  ]
+  },
+
+  { type: "section", label: "Final chorus — fading" },
+
+  /* no.61 — 好きなことだけでいいです… */
+  { type: "line", src: "好きなことだけでいいです…", units: [
+    { name: "i_like", pos: "n", jp: "好きなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです…", tr: "de ii desu …", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.62 — 全人類が好きなことやったら */
+  { type: "line", src: "全人類が好きなことやったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類が", tr: "zenjinrui ga", en: "all of humanity", ru: "всё человечество" },
+    { name: "i_like", pos: "n", jp: "好きなこと", tr: "suki na koto", en: "did the things they like,", ru: "сделало то, что нравится," },
+    { name: "if", pos: "v", jp: "やったら", tr: "yattara", en: "if", ru: "если" }
+  ], ord: { en: ["if", "humanity", "i_like"], ru: ["if", "humanity", "i_like"] }
+  },
+
+  /* no.63 — 世界は滅亡するけど */
+  { type: "line", src: "世界は滅亡するけど", units: [
+    { name: "world", pos: "n", jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
+    { name: "perish", pos: "v", jp: "滅亡する", tr: "metsubou suru", en: "would turn to ruin", ru: "погиб бы," },
+    { name: "though", pos: "conj", jp: "けど", tr: "kedo", en: "though", ru: "но" }
+  ], ord: { en: ["though", "world", "perish"], ru: ["though", "world", "perish"] }
+  },
+
+  { type: "section", label: "Final verse — what used to be" },
+
+  /* no.64 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.65 — みんな　好きなことが好きでした */
+  { type: "line", src: "みんな　好きなことが好きでした", units: [
+    { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
+    { name: "i_like", pos: "n", jp: "好きなことが", tr: "suki na koto ga", en: "the things they liked", ru: "то, что нравилось," },
+    { name: "like", pos: "adjna", jp: "好きでした", tr: "suki deshita", en: "they loved", ru: "они любили" }
+  ]
+  },
+
+  /* no.66 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.67 — みんな　嫌なことは嫌でした */
+  { type: "line", src: "みんな　嫌なことは嫌でした", units: [
+    { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
+    { name: "dislike", pos: "n", jp: "嫌なことは", tr: "iya na koto wa", en: "the things they disliked", ru: "то, что не нравилось," },
+    { name: "hate", pos: "adjna", jp: "嫌でした", tr: "iya deshita", en: "they hated", ru: "они ненавидели" }
+  ]
+  },
+
+  /* no.68 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.69 — ほんと　すきなことだけでいいです */
+  { type: "line", src: "ほんと　すきなことだけでいいです", units: [
+    { name: "really", pos: "adv", jp: "ほんと　", tr: "honto ", en: "really", ru: "правда" },
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["really", "only", "i_like", "thats_fine"] }
+  },
+
+  /* no.70 — 全人類が好きなことやったら */
+  { type: "line", src: "全人類が好きなことやったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類が", tr: "zenjinrui ga", en: "all of humanity", ru: "всё человечество" },
+    { name: "i_like", pos: "n", jp: "好きなこと", tr: "suki na koto", en: "did the things they like,", ru: "сделало то, что нравится," },
+    { name: "if", pos: "v", jp: "やったら", tr: "yattara", en: "if", ru: "если" }
+  ], ord: { en: ["if", "humanity", "i_like"], ru: ["if", "humanity", "i_like"] }
+  },
+
+  /* no.71 — 世界は滅亡したけど */
+  { type: "line", src: "世界は滅亡したけど", units: [
+    { name: "world", pos: "n", jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
+    { name: "perished", pos: "v", jp: "滅亡した", tr: "metsubou shita", en: "turned to ruin", ru: "погиб," },
+    { name: "though", pos: "conj", jp: "けど", tr: "kedo", en: "though", ru: "но" }
+  ], ord: { en: ["though", "world", "perished"], ru: ["though", "world", "perished"] }
+  },
+
+  /* no.72 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.73 — 君のことが　ほんとに好きでした */
+  { type: "line", src: "君のことが　ほんとに好きでした", units: [
+    { name: "about_you", pos: "n", jp: "君のことが　", tr: "kimi no koto ga ", en: "about you", ru: "в тебе" },
+    { name: "really", pos: "adv", jp: "ほんとに", tr: "honto ni", en: "really", ru: "по-настоящему" },
+    { name: "like", pos: "adjna", jp: "好きでした", tr: "suki deshita", en: "I liked", ru: "любил" }
+  ]
+  },
+
+  /* no.74 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.75 — 君は違う誰かが好きでした */
+  { type: "line", src: "君は違う誰かが好きでした", units: [
+    { name: "you", pos: "pron", jp: "君は", tr: "kimi wa", en: "you", ru: "ты" },
+    { name: "another", pos: "n", jp: "違う誰かが", tr: "chigau dareka ga", en: "someone else", ru: "кто-то другой" },
+    { name: "like", pos: "adjna", jp: "好きでした", tr: "suki deshita", en: "you liked", ru: "ты любил" }
+  ]
+  },
+
+  /* no.76 — すきなことだけでいいです */
+  { type: "line", src: "すきなことだけでいいです", units: [
+    { name: "i_like", pos: "n", jp: "すきなこと", tr: "suki na koto", en: "the things I like,", ru: "то, что нравится," },
+    { name: "only", pos: "adv", jp: "だけ", tr: "dake", en: "only", ru: "только" },
+    { name: "thats_fine", pos: "adj", jp: "でいいです", tr: "de ii desu", en: "is fine with me", ru: "меня устраивает" }
+  ], ord: { en: ["only", "i_like", "thats_fine"] }
+  },
+
+  /* no.77 — やっぱ　それだけじゃ難しいです */
+  { type: "line", src: "やっぱ　それだけじゃ難しいです", units: [
+    { name: "after_all", pos: "adv", jp: "やっぱ　", tr: "yappa ", en: "after all", ru: "в конце концов" },
+    { name: "only_that", pos: "adv", jp: "それだけじゃ", tr: "sore dake ja", en: "only that", ru: "только это" },
+    { name: "hard", pos: "adj", jp: "難しいです", tr: "muzukashii desu", en: "is difficult", ru: "сложно" }
+  ]
+  },
+
+  /* no.78 — 全人類が幸せになったら */
+  { type: "line", src: "全人類が幸せになったら", units: [
+    { name: "humanity", pos: "n", jp: "全人類が", tr: "zenjinrui ga", en: "all of humanity", ru: "всё человечество" },
+    { name: "happy", pos: "adjna", jp: "幸せに", tr: "shiawase ni", en: "became happy,", ru: "стало счастливым," },
+    { name: "if", pos: "v", jp: "なったら", tr: "nattara", en: "if", ru: "если" }
+  ], ord: { en: ["if", "humanity", "happy"], ru: ["if", "humanity", "happy"] }
+  },
+
+  /* no.79 — 宇宙が迷惑するから */
+  { type: "line", src: "宇宙が迷惑するから", units: [
+    { name: "universe", pos: "n", jp: "宇宙が", tr: "uchuu ga", en: "the universe", ru: "вселенная" },
+    { name: "trouble", pos: "v", jp: "迷惑する", tr: "meiwaku suru", en: "would be troubled", ru: "возмутилась бы," },
+    { name: "because", pos: "conj", jp: "から", tr: "kara", en: "because", ru: "потому что" }
+  ], ord: { en: ["because", "universe", "trouble"], ru: ["because", "universe", "trouble"] }
+  },
 ];

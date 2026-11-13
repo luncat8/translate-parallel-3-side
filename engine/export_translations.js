@@ -1,5 +1,6 @@
 // Export line-aligned expected translations from a canonical word-level map.
-// Usage: node engine/export_translations.js <song-data.js> <source.ja.txt> <out-dir>
+// Usage: node engine/export_translations.js <song-data.js> <source text> <out-dir>
+// Target languages = META.columns minus META.sourceKey/META.translitKey.
 "use strict";
 
 const fs = require("fs");
@@ -50,7 +51,9 @@ if (lineBlocks.length !== sourceCount) {
 	process.exit(1);
 }
 
-const targets = META.columns.filter(lang => lang !== "jp" && lang !== "tr");
+const srcKey = META.sourceKey || "jp";
+const trKey = META.translitKey || "tr";
+const targets = META.columns.filter(lang => lang !== srcKey && lang !== trKey);
 fs.mkdirSync(outDir, { recursive: true });
 targets.forEach(lang => {
 	const rendered = lineBlocks.map(block => renderLine(block, lang));
