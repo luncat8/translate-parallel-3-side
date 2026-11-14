@@ -17,6 +17,11 @@
   in en and ru and coloured as interjections.
 - Expected translations were exported from this map
   (`tools/song.py export --song jumping-girl`).
+- Columns read source first, its mirror next, then the translations
+  (`jp`, `tr`, `en`, `ru`); the header labels are the two-letter codes and
+  `META.columnNames` carries the full names for the tooltip.
+- `そこには` is the only は topic in the song, so it carries `topic: true` and
+  is underlined in every column.
 
 ## Next step
 

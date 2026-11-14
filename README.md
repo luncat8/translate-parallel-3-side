@@ -25,6 +25,8 @@ songs/<song-id>/
 
 Expected translations are plain line-aligned gold text: one target line per source line, with the same blank stanza lines. `result.html` is generated from `map/song-data.js`; never hand-edit it.
 
+The page draws one grid row per lyric line. Columns follow `META.columns`: the source first, its transliteration straight after it, then the translations (`jp`, `tr`, `en`, `ru`), labelled with those two-letter codes. Narrow screens stack the columns behind one fixed-width label, so every line starts at the same place however long its text is. An underlined word is the sentence topic — the unit carrying the topic particle は — because one part-of-speech colour can cover several words in a line.
+
 ## Included songs
 
 | Folder | Source | Map | Example |

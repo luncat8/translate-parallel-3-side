@@ -5,7 +5,7 @@ verbatim; nothing here is generated at test time, so a format change shows up as
 
 | File | What it proves |
 |---|---|
-| `jumping-girl.lmz.txt` | Full 53-block song, 4 columns (`jp,tr,ru,en`), palette inline, `#` comments, `@timeFormat none`. The source column is byte-exact against `songs/jumping-girl/sources/fixation.json`, including U+3000 and full-width punctuation. |
+| `jumping-girl.lmz.txt` | Full 53-block song, 4 columns (`jp,tr,en,ru`), palette inline, `#` comments, `@timeFormat none`. The source column is byte-exact against `songs/jumping-girl/sources/fixation.json`, including U+3000 and full-width punctuation. |
 
 ## Consuming
 

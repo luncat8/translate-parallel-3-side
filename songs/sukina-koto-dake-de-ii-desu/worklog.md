@@ -50,6 +50,16 @@
   line-aligned gold files are the human reference for the lyric. Do not
   overwrite them with `tools/song.py export` output.
 
+## Layout and topic marks
+
+- Columns read source first, its romaji mirror next, then the translations
+  (`jp`, `tr`, `en`, `ru`); the header labels are the two-letter codes and
+  `META.columnNames` carries the full names for the tooltip.
+- The 18 `は` topics (`平日は`, `仕事は`, `野菜は`, `麦茶は`, `甘味は`, `嫌なことは`,
+  `世界は`, `君は`, `天使は`, `天国は`, `生物は`, `リアルは`) carry `topic: true`, so
+  the topic is underlined in every column and stays readable next to the units
+  that share its part-of-speech colour.
+
 ## Validation
 
 `python3 tools/song.py build --song sukina-koto-dake-de-ii-desu`

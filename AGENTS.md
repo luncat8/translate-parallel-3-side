@@ -60,13 +60,15 @@ that every mechanical invariant holds.
 | **fixation** | step 1: the plain source text, which everything must reconstruct |
 | **mirror** | the transliteration column: it copies source order, never reorders |
 | **ord** | per-line reorder arrays for free-order target languages |
+| **topic** | the unit carrying the topic particle は; `topic: true` underlines it in every column |
 
 One object per meaning holds all languages. This is the core safety property:
 
 ```js
 // units[] is in SOURCE word order.
 // Reference engine source key is "jp"; mirror key is "tr"; META.columns defines
-// the rendered columns (typically ru/en/jp/tr).
+// the rendered columns: source first, then its mirror, then the translations
+// (jp/tr/en/ru). columnTitles are the short labels, columnNames the full names.
 {
 	type: "line",
 	src: "もし明日晴れたら、私はキノコ狩りに行きます。",
@@ -74,7 +76,7 @@ One object per meaning holds all languages. This is the core safety property:
 		{ name: "if", pos: "adv", jp: "もし", tr: "Moshi", en: "If", ru: "Если" },
 		{ name: "tomorrow", pos: "n", jp: "明日", tr: "ashita", en: "tomorrow", ru: "завтра" },
 		{ name: "is_sunny", pos: "v", jp: "晴れたら、", tr: "haretara,", en: "it is sunny,", ru: "будет солнечно," },
-		{ name: "I", pos: "pron", jp: "私は", tr: "watashi wa", en: "I", ru: "я" },
+		{ name: "I", pos: "pron", topic: true, jp: "私は", tr: "watashi wa", en: "I", ru: "я" },
 		{ name: "mushroom_hunting", pos: "n", jp: "キノコ狩りに", tr: "kinoko gari ni", en: "mushroom hunting.", ru: "за грибами." },
 		{ name: "will_go", pos: "v", jp: "行きます。", tr: "ikimasu.", en: "will go", ru: "пойду" }
 	],
@@ -96,6 +98,10 @@ The example is invented; any source language uses the same shape. Invariants:
 	against `src` character-for-character (including U+3000 and punctuation).
 - **`ord` is checked.** Reorder arrays must be exact permutations of the line's
 	names.
+- **The topic mark is checked.** `topic: true` is only legal on a unit whose
+	source cell ends with は (particle, mirroring the source grammar); a source
+	cell that ends with は and carries no mark is reported as a warning, so the
+	mark cannot silently go missing.
 
 Do not invent a different structure per project. Swap the data, not the model.
 
@@ -203,7 +209,9 @@ next-step suggestion.
 		`私は`, `キノコ狩りに`;
 	- sentence-final particles (よ ね わ か な) attach to their predicate:
 		`行きます。`, `気分よ`;
-	- topic/contrast は attaches to its topic;
+	- topic/contrast は attaches to its topic, and that unit carries `topic: true`:
+		the engine underlines it in every column, which is what tells the topic
+		apart from other units of the same POS colour in a busy line;
 	- standalone connectives (けど, でも, だから, 〜と "quoting") may be their own
 		unit (pos `conj`).
 - **Punctuation is never a unit.** It folds into the preceding unit's cell text
@@ -252,6 +260,13 @@ the code from `META` rather than forcing units into it.
 
 ## column rules
 
+- **Column order.** `META.columns` is `source, mirror, translations…` — the
+	source text first, its transliteration immediately after it, then the target
+	languages. `columnTitles` holds the short label shown above the song lines
+	(the bare column code, e.g. `jp`, `tr`, `en`, `ru`), `columnNames` the full
+	language names used in the header tooltip. Never label a column with long
+	text: the label is a gutter, and long labels break the aligned start of the
+	lines in the stacked layout.
 - **Source.** Fixed word order = fixation text. No added spaces, no
 	normalisation, punctuation exactly as in the source.
 - **Transliteration (mirror).** Mechanically mirrors the source, unit by unit.
@@ -322,6 +337,7 @@ Automated (build harness + page Validation panel — must be green):
 - [ ] source/mirror order (structural; `trOrd` optional explicit check)
 - [ ] `ord` arrays are exact permutations of their line's names
 - [ ] one POS per name across the file (surface variants reported as warnings)
+- [ ] every は topic carries `topic: true`; no topic mark on a non-は cell
 - [ ] warnings audited; intentional duplicates/surface variants documented in
 	`META.credit`
 
@@ -330,6 +346,7 @@ Human:
 - [ ] refrain lines reuse glossary names
 - [ ] colours read as grammar, not decoration; legend counts sensible
 - [ ] hover/pin lights the same meaning in every column
+- [ ] the underlined topic is the は topic in every column
 - [ ] plain-text mode shows the fixation; vocabulary index complete
 - [ ] mobile stack and print output readable
 
@@ -341,9 +358,10 @@ Human:
 2. Fixate the source into `sources/source.ja.txt` and regenerate
 	`sources/fixation.json` with `tools/song.py fixation --song <id>`.
 3. Provide line-aligned expected translations, then replace the generated starter
-	map with `map/song-data.js`: `META` (title, columns, `columnTitles`, POS labels,
-	optional `trMirror`) + `DATA` (title/section/gap/line blocks). The template's
-	embedded demo covers every POS colour.
+	map with `map/song-data.js`: `META` (title, columns, `columnTitles`,
+	`columnNames`, POS labels, optional `trMirror`) + `DATA`
+	(title/section/gap/line blocks). The template's embedded demo covers every
+	POS colour and one underlined topic.
 4. Build and gate: `tools/song.py build --all` must report `errors: 0`;
 	`tools/song.py check --all` also verifies source/translation alignment and
 	that every `result.html` matches its map.
@@ -351,13 +369,13 @@ Human:
 	vocabulary index complete; dark theme, narrow viewport, print readable. Keep
 	screenshots in `qa/`.
 
-Column sets are configurable via `META.columns` + `columnTitles`. The reference
-engine ships with four columns and a matching CSS grid; if you change the count,
-adjust the grid. For RTL targets add a `dir` rule in the template CSS. POS
-palette: add the class pair in the template CSS (`--pos-x` light/dark) and the
-label in `META`.
+Column sets are configurable via `META.columns` + `columnTitles` + `columnNames`.
+The reference engine ships with four columns (`jp`, `tr`, `en`, `ru`) and a
+matching CSS grid; if you change the count, adjust the grid. For RTL targets add
+a `dir` rule in the template CSS. POS palette: add the class pair in the
+template CSS (`--pos-x` light/dark) and the label in `META`.
 
-Reference column keys: `META.columns` (four entries), source `jp`, transliteration
-`tr`, translations `en`/`ru`. Rename only by editing the engine's hard-coded
-source/mirror keys and CSS grid together; otherwise keep the keys and swap the
-data.
+Reference column keys: `META.columns` (four entries, in reading order: `jp`, `tr`,
+`en`, `ru`), source `jp`, transliteration `tr`, translations `en`/`ru`. Rename
+only by editing the engine's hard-coded source/mirror keys and CSS grid
+together; otherwise keep the keys and swap the data.

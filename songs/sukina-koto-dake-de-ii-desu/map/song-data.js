@@ -14,8 +14,9 @@ const META = {
   title: "すきなことだけでいいです — LinguaMap",
   subtitle: "すきなことだけでいいです · parallel word map: 日本語 · Romaji · English · Русский",
   credit: "Mapped with the LinguaMap workflow (AGENTS.md): one meaning = one name across all columns · colour = part of speech (based on the Japanese) · romaji mirrors the Japanese word order. Chorus and refrain lines deliberately reuse the same names; the validator reports the resulting duplicate-occurrence warnings as intended.",
-  columns: ["ru", "en", "jp", "tr"],
-  columnTitles: { ru: "Русский", en: "English", jp: "日本語", tr: "Romaji" },
+  columns: ["jp", "tr", "en", "ru"],
+  columnTitles: { jp: "jp", tr: "tr", en: "en", ru: "ru" },
+  columnNames: { jp: "Japanese", tr: "Romaji", en: "English", ru: "Русский" },
   sourceKey: "jp",
   translitKey: "tr",
   trMirror: true,
@@ -32,7 +33,7 @@ const DATA = [
 
   /* no.1 — 平日は嫌　休みが好き */
   { type: "line", src: "平日は嫌　休みが好き", units: [
-    { name: "weekday", pos: "n", jp: "平日は", tr: "heijitsu wa", en: "weekdays", ru: "будни" },
+    { name: "weekday", pos: "n", topic: true, jp: "平日は", tr: "heijitsu wa", en: "weekdays", ru: "будни" },
     { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
     { name: "holiday", pos: "n", jp: "休みが", tr: "yasumi ga", en: "the weekend", ru: "выходной" },
     { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
@@ -41,7 +42,7 @@ const DATA = [
 
   /* no.2 — 仕事は嫌　二度寝が好き */
   { type: "line", src: "仕事は嫌　二度寝が好き", units: [
-    { name: "work", pos: "n", jp: "仕事は", tr: "shigoto wa", en: "work", ru: "работу" },
+    { name: "work", pos: "n", topic: true, jp: "仕事は", tr: "shigoto wa", en: "work", ru: "работу" },
     { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
     { name: "second_sleep", pos: "n", jp: "二度寝が", tr: "nidone ga", en: "going back to sleep", ru: "поспать ещё" },
     { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
@@ -67,7 +68,7 @@ const DATA = [
 
   /* no.5 — 野菜は嫌　ハンバーグが好き */
   { type: "line", src: "野菜は嫌　ハンバーグが好き", units: [
-    { name: "vegetable", pos: "n", jp: "野菜は", tr: "yasai wa", en: "vegetables", ru: "овощи" },
+    { name: "vegetable", pos: "n", topic: true, jp: "野菜は", tr: "yasai wa", en: "vegetables", ru: "овощи" },
     { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
     { name: "hamburger", pos: "n", jp: "ハンバーグが", tr: "hanbaagu ga", en: "hamburgers", ru: "бургеры" },
     { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
@@ -76,7 +77,7 @@ const DATA = [
 
   /* no.6 — 麦茶は嫌　ジュースが好き */
   { type: "line", src: "麦茶は嫌　ジュースが好き", units: [
-    { name: "barley_tea", pos: "n", jp: "麦茶は", tr: "mugicha wa", en: "barley tea", ru: "ячменный чай" },
+    { name: "barley_tea", pos: "n", topic: true, jp: "麦茶は", tr: "mugicha wa", en: "barley tea", ru: "ячменный чай" },
     { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
     { name: "juice", pos: "n", jp: "ジュースが", tr: "juusu ga", en: "juice", ru: "сок" },
     { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
@@ -87,7 +88,7 @@ const DATA = [
   { type: "line", src: "甘えんな　でも甘味は好き", units: [
     { name: "dont_be_sweet", pos: "v", jp: "甘えんな　", tr: "amaenna ", en: "don't be sweet on me,", ru: "не будь со мной милым," },
     { name: "but", pos: "conj", jp: "でも", tr: "demo", en: "but", ru: "но" },
-    { name: "sweetness", pos: "n", jp: "甘味は", tr: "kanmi wa", en: "sweet things", ru: "сладкое" },
+    { name: "sweetness", pos: "n", topic: true, jp: "甘味は", tr: "kanmi wa", en: "sweet things", ru: "сладкое" },
     { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
   ], ord: { en: ["dont_be_sweet", "but", "like", "sweetness"], ru: ["dont_be_sweet", "but", "like", "sweetness"] }
   },
@@ -161,7 +162,7 @@ const DATA = [
   /* no.16 — みんな　嫌なことは嫌なんです */
   { type: "line", src: "みんな　嫌なことは嫌なんです", units: [
     { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
-    { name: "dislike", pos: "n", jp: "嫌なことは", tr: "iya na koto wa", en: "the things they dislike", ru: "то, что не нравится," },
+    { name: "dislike", pos: "n", topic: true, jp: "嫌なことは", tr: "iya na koto wa", en: "the things they dislike", ru: "то, что не нравится," },
     { name: "hate", pos: "adjna", jp: "嫌なんです", tr: "iya nan desu", en: "they hate", ru: "они ненавидят" }
   ]
   },
@@ -193,7 +194,7 @@ const DATA = [
 
   /* no.20 — 世界は滅亡するけど */
   { type: "line", src: "世界は滅亡するけど", units: [
-    { name: "world", pos: "n", jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
+    { name: "world", pos: "n", topic: true, jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
     { name: "perish", pos: "v", jp: "滅亡する", tr: "metsubou suru", en: "would turn to ruin", ru: "погиб бы," },
     { name: "though", pos: "conj", jp: "けど", tr: "kedo", en: "though", ru: "но" }
   ], ord: { en: ["though", "world", "perish"], ru: ["though", "world", "perish"] }
@@ -227,7 +228,7 @@ const DATA = [
 
   /* no.24 — 君は違う誰かが好きなんです */
   { type: "line", src: "君は違う誰かが好きなんです", units: [
-    { name: "you", pos: "pron", jp: "君は", tr: "kimi wa", en: "you", ru: "ты" },
+    { name: "you", pos: "pron", topic: true, jp: "君は", tr: "kimi wa", en: "you", ru: "ты" },
     { name: "another", pos: "n", jp: "違う誰かが", tr: "chigau dareka ga", en: "someone else", ru: "кто-то другой" },
     { name: "like", pos: "adjna", jp: "好きなんです", tr: "suki nan desu", en: "you like", ru: "тебе нравится" }
   ]
@@ -271,7 +272,7 @@ const DATA = [
 
   /* no.29 — 天使は嫌　悪魔が好き */
   { type: "line", src: "天使は嫌　悪魔が好き", units: [
-    { name: "angel", pos: "n", jp: "天使は", tr: "tenshi wa", en: "angels", ru: "ангелы" },
+    { name: "angel", pos: "n", topic: true, jp: "天使は", tr: "tenshi wa", en: "angels", ru: "ангелы" },
     { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
     { name: "demon", pos: "n", jp: "悪魔が", tr: "akuma ga", en: "demons", ru: "демоны" },
     { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
@@ -280,7 +281,7 @@ const DATA = [
 
   /* no.30 — 天国は嫌　地獄が好き */
   { type: "line", src: "天国は嫌　地獄が好き", units: [
-    { name: "heaven", pos: "n", jp: "天国は", tr: "tengoku wa", en: "heaven", ru: "рай" },
+    { name: "heaven", pos: "n", topic: true, jp: "天国は", tr: "tengoku wa", en: "heaven", ru: "рай" },
     { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
     { name: "hell", pos: "n", jp: "地獄が", tr: "jigoku ga", en: "hell", ru: "ад" },
     { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
@@ -305,7 +306,7 @@ const DATA = [
 
   /* no.33 — 生物は嫌　機械が好き */
   { type: "line", src: "生物は嫌　機械が好き", units: [
-    { name: "creature", pos: "n", jp: "生物は", tr: "seibutsu wa", en: "living things", ru: "живое" },
+    { name: "creature", pos: "n", topic: true, jp: "生物は", tr: "seibutsu wa", en: "living things", ru: "живое" },
     { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
     { name: "machine", pos: "n", jp: "機械が", tr: "kikai ga", en: "machines", ru: "машины" },
     { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
@@ -314,7 +315,7 @@ const DATA = [
 
   /* no.34 — リアルは嫌　虚像が好き */
   { type: "line", src: "リアルは嫌　虚像が好き", units: [
-    { name: "real", pos: "n", jp: "リアルは", tr: "riaru wa", en: "the real", ru: "реальное" },
+    { name: "real", pos: "n", topic: true, jp: "リアルは", tr: "riaru wa", en: "the real", ru: "реальное" },
     { name: "hate", pos: "adjna", jp: "嫌　", tr: "iya ", en: "I hate", ru: "ненавижу" },
     { name: "virtual", pos: "n", jp: "虚像が", tr: "kyozou ga", en: "the virtual", ru: "иллюзию" },
     { name: "like", pos: "adjna", jp: "好き", tr: "suki", en: "I love", ru: "люблю" }
@@ -390,7 +391,7 @@ const DATA = [
   /* no.44 — みんな　嫌なことは嫌なんです */
   { type: "line", src: "みんな　嫌なことは嫌なんです", units: [
     { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
-    { name: "dislike", pos: "n", jp: "嫌なことは", tr: "iya na koto wa", en: "the things they dislike", ru: "то, что не нравится," },
+    { name: "dislike", pos: "n", topic: true, jp: "嫌なことは", tr: "iya na koto wa", en: "the things they dislike", ru: "то, что не нравится," },
     { name: "hate", pos: "adjna", jp: "嫌なんです", tr: "iya nan desu", en: "they hate", ru: "они ненавидят" }
   ]
   },
@@ -422,7 +423,7 @@ const DATA = [
 
   /* no.48 — 世界は滅亡するけど */
   { type: "line", src: "世界は滅亡するけど", units: [
-    { name: "world", pos: "n", jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
+    { name: "world", pos: "n", topic: true, jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
     { name: "perish", pos: "v", jp: "滅亡する", tr: "metsubou suru", en: "would turn to ruin", ru: "погиб бы," },
     { name: "though", pos: "conj", jp: "けど", tr: "kedo", en: "though", ru: "но" }
   ], ord: { en: ["though", "world", "perish"], ru: ["though", "world", "perish"] }
@@ -548,7 +549,7 @@ const DATA = [
 
   /* no.63 — 世界は滅亡するけど */
   { type: "line", src: "世界は滅亡するけど", units: [
-    { name: "world", pos: "n", jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
+    { name: "world", pos: "n", topic: true, jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
     { name: "perish", pos: "v", jp: "滅亡する", tr: "metsubou suru", en: "would turn to ruin", ru: "погиб бы," },
     { name: "though", pos: "conj", jp: "けど", tr: "kedo", en: "though", ru: "но" }
   ], ord: { en: ["though", "world", "perish"], ru: ["though", "world", "perish"] }
@@ -583,7 +584,7 @@ const DATA = [
   /* no.67 — みんな　嫌なことは嫌でした */
   { type: "line", src: "みんな　嫌なことは嫌でした", units: [
     { name: "everyone", pos: "n", jp: "みんな　", tr: "minna ", en: "everyone", ru: "все" },
-    { name: "dislike", pos: "n", jp: "嫌なことは", tr: "iya na koto wa", en: "the things they disliked", ru: "то, что не нравилось," },
+    { name: "dislike", pos: "n", topic: true, jp: "嫌なことは", tr: "iya na koto wa", en: "the things they disliked", ru: "то, что не нравилось," },
     { name: "hate", pos: "adjna", jp: "嫌でした", tr: "iya deshita", en: "they hated", ru: "они ненавидели" }
   ]
   },
@@ -615,7 +616,7 @@ const DATA = [
 
   /* no.71 — 世界は滅亡したけど */
   { type: "line", src: "世界は滅亡したけど", units: [
-    { name: "world", pos: "n", jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
+    { name: "world", pos: "n", topic: true, jp: "世界は", tr: "sekai wa", en: "the world", ru: "мир" },
     { name: "perished", pos: "v", jp: "滅亡した", tr: "metsubou shita", en: "turned to ruin", ru: "погиб," },
     { name: "though", pos: "conj", jp: "けど", tr: "kedo", en: "though", ru: "но" }
   ], ord: { en: ["though", "world", "perished"], ru: ["though", "world", "perished"] }
@@ -647,7 +648,7 @@ const DATA = [
 
   /* no.75 — 君は違う誰かが好きでした */
   { type: "line", src: "君は違う誰かが好きでした", units: [
-    { name: "you", pos: "pron", jp: "君は", tr: "kimi wa", en: "you", ru: "ты" },
+    { name: "you", pos: "pron", topic: true, jp: "君は", tr: "kimi wa", en: "you", ru: "ты" },
     { name: "another", pos: "n", jp: "違う誰かが", tr: "chigau dareka ga", en: "someone else", ru: "кто-то другой" },
     { name: "like", pos: "adjna", jp: "好きでした", tr: "suki deshita", en: "you liked", ru: "ты любил" }
   ]

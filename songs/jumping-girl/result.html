@@ -92,6 +92,9 @@ header .credit{color:var(--muted);font-size:12.5px;margin:10px 0 12px}
 /* ---------------- mapped units ---------------- */
 .unit{color:var(--c);border-radius:3px;padding:0 1px;margin:0 .5px;cursor:pointer;
   transition:opacity .15s}
+/* the source topic (the unit carrying は): one POS colour covers many words,
+   so the underline is what picks the topic out of them */
+.unit.topic{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:2.5px}
 .unit:hover,.unit.sync{background:var(--hlbg);color:var(--hlfg)!important;font-weight:600;
   box-shadow:0 0 0 1px var(--hlbg)}
 body.dimming #lines .unit:not(.sync){opacity:.16}
@@ -99,7 +102,7 @@ body.dimming header .unit:not(.sync){opacity:.16}
 body.soloing #lines .unit:not(.solo){opacity:.16}
 body.soloing header .unit:not(.solo){opacity:.16}
 body.plain .unit{color:inherit!important;background:none!important;box-shadow:none!important;
-  font-weight:inherit!important;opacity:1!important;cursor:text}
+  font-weight:inherit!important;opacity:1!important;cursor:text;text-decoration:none!important}
 
 /* ---------------- plain-text panel (text fixation) ---------------- */
 #plain{margin:0 0 16px}
@@ -118,13 +121,13 @@ body.plain .unit{color:inherit!important;background:none!important;box-shadow:no
 .lineno{color:var(--muted);font-size:11px;text-align:right;padding:10px 0 6px;
   font-family:ui-monospace,Consolas,monospace;opacity:.8}
 .cell{padding:9px 0 8px;border-bottom:1px solid var(--line);min-width:0;overflow-wrap:break-word}
+.ctext{min-width:0}
 .line:last-of-type .cell{border-bottom:none}
 .cell.z{background:var(--card2)}
 .cell.src{font-weight:500}
 .cell.tr{color:var(--muted);font-size:13.5px}
-.hcell{padding:10px 0 9px;font-weight:600;letter-spacing:.06em;font-size:12.5px;
-  color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--line)}
-.hcell .mirror{opacity:.6;font-weight:400;text-transform:none;letter-spacing:0}
+.hcell{padding:10px 0 9px;font-weight:600;letter-spacing:.08em;font-size:12.5px;
+  color:var(--muted);border-bottom:2px solid var(--line)}
 .gapcell{grid-column:1/-1;height:14px;border-bottom:none}
 .sectioncell{grid-column:1/-1;font-size:12px;font-weight:700;color:var(--muted);
   letter-spacing:.1em;text-transform:uppercase;padding:14px 0 4px;border-bottom:none}
@@ -163,18 +166,22 @@ footer{max-width:1300px;margin:0 auto;padding:14px 20px 40px;color:var(--muted);
 footer code{font-size:11px}
 
 /* ---------------- responsive ---------------- */
+/* Stacked layout: each column line is a fixed label gutter plus its text, so
+   every line starts at the same x and wrapped text stays under its first line
+   instead of running back to the edge. */
 @media(max-width:860px){
   #lines{display:block;padding:2px 12px 8px}
   .line{display:grid;grid-template-columns:1fr;gap:0;padding:6px 0}
   .lineno{display:none}
   .hcell{display:none}
-  .cell{border-bottom:1px dashed var(--line);padding:7px 0 6px}
+  .cell{border-bottom:1px dashed var(--line);padding:7px 0 6px;
+    display:grid;grid-template-columns:2.2rem minmax(0,1fr);column-gap:9px;
+    align-items:baseline;font-size:14px;line-height:1.95}
   .cell.z{background:none}
-  .cell{font-size:14px;line-height:1.95}
   .cell.lang-tr{font-size:13px}
-  .cell::before{content:attr(data-full);display:inline-block;font-size:9.5px;font-weight:700;
-    color:var(--bg);background:var(--muted);border-radius:4px;padding:1px 6px;margin-right:8px;
-    position:relative;top:-2px;letter-spacing:.08em}
+  .cell::before{content:attr(data-full);justify-self:stretch;text-align:center;
+    font-size:9.5px;font-weight:700;color:var(--bg);background:var(--muted);
+    border-radius:4px;padding:1px 0;letter-spacing:.08em}
   .gapcell,.sectioncell{padding:8px 0 2px}
   .vrow{grid-template-columns:96px 1fr;row-gap:1px}
   .vrow .vsrc,.vrow .vtr,.vrow .vcell{grid-column:2}
@@ -213,7 +220,7 @@ footer code{font-size:11px}
   </div>
 
   <div class="legend" id="legend"></div>
-  <p class="hint">Hover or tap any word: the same meaning lights up in every column. Click to pin, Esc to release. Click a legend chip to focus one part of speech; use the checkboxes to show or hide languages.</p>
+  <p class="hint">Hover or tap any word: the same meaning lights up in every column. Click to pin, Esc to release. Click a legend chip to focus one part of speech; use the checkboxes to show or hide languages. An underlined word is the sentence topic (the unit carrying は) — several units can share one colour, so the underline is what singles out the topic.</p>
   <p id="stats"></p>
 
   <details id="plain">
@@ -234,7 +241,7 @@ footer code{font-size:11px}
 
   <details id="valPanel" class="panel">
     <summary>Validation — data invariants</summary>
-    <p class="pnote">Checks: the source column reconstructs the fixation text character-for-character · the transliteration column mirrors it structurally · target order arrays are exact permutations · one POS per name · every column filled.</p>
+    <p class="pnote">Checks: the source column reconstructs the fixation text character-for-character · the transliteration column mirrors it structurally · target order arrays are exact permutations · one POS per name · every column filled · every topic mark sits on a は cell.</p>
     <div id="valList"></div>
   </details>
 </main>
@@ -262,6 +269,7 @@ footer code{font-size:11px}
        of the unit names (no drops, no unknown names)
    I5  one POS per name, consistent across the whole file
    I6  POS codes must exist in META.posLabels
+   I7  the topic mark sits on the unit that carries the topic particle
    ============================================================ */
 "use strict";
 
@@ -272,8 +280,13 @@ function validateData(META, DATA) {
   var cols = META.columns || [];
   var srcKey = META.sourceKey || "jp";
   var trKey = META.translitKey || "tr";
+  var topicParticle = META.topicParticle || "は";
+  var TOPIC_TAIL = /[、。！？!?…」』）)\]　 ]+$/;
   var nameInfo = {};   // name -> {pos, src, count}
 
+  function isTopicCell(cell) {
+    return cell.replace(TOPIC_TAIL, "").slice(-topicParticle.length) === topicParticle;
+  }
   function err(msg) { issues.push({ sev: "err", msg: msg }); }
   function warn(msg) { issues.push({ sev: "warn", msg: msg }); }
 
@@ -306,6 +319,15 @@ function validateData(META, DATA) {
       });
       if (posSet.indexOf(u.pos) === -1) {
         err("L" + no + " [" + u.name + "]: unknown POS code \"" + u.pos + "\"");
+      }
+      var cell = u[srcKey] || "";
+      if (u.topic && !isTopicCell(cell)) {
+        err("L" + no + " [" + u.name + "]: topic mark, but the " + srcKey +
+            " cell does not carry the topic particle " + topicParticle);
+      }
+      if (!u.topic && isTopicCell(cell)) {
+        warn("L" + no + " [" + u.name + "]: " + srcKey + " cell ends with the topic particle " +
+             topicParticle + " but has no topic mark");
       }
       var prev = nameInfo[u.name];
       if (prev) {
@@ -381,8 +403,9 @@ if (typeof module !== "undefined") module.exports = { validateData: validateData
    Fixation: Japanese lyrics, 53 lines, stanza structure preserved
    (the validator rebuilds every src line character-for-character).
 
-   Columns: ru / en / jp / tr — tr mirrors jp structurally because
-   both render the same units[] array (jp word order).
+   Columns: jp / tr / en / ru — the source first, its romaji mirror next,
+   then the translations; tr mirrors jp structurally because both render
+   the same units[] array (jp word order).
 
    Policies (AGENTS.md §6–§9), frozen for this project:
    - unit = smallest independently translatable meaning; inflected
@@ -414,8 +437,9 @@ const META = {
   title: "Jumping girl — LinguaMap",
   subtitle: "Jumpin' girls! · parallel word map: 日本語 · Romaji · English · Русский",
   credit: "Mapped with the LinguaMap workflow (AGENTS.md): one meaning = one name across all columns · colour = part of speech (based on the Japanese) · romaji mirrors the Japanese word order · English chant refrains stay verbatim. Refrain/duplicate warnings in the Validation panel are intentional (call & response echoes, particles folded per line function).",
-  columns: ["ru", "en", "jp", "tr"],
-  columnTitles: { ru: "Русский", en: "English", jp: "日本語", tr: "Romaji" },
+  columns: ["jp", "tr", "en", "ru"],
+  columnTitles: { jp: "jp", tr: "tr", en: "en", ru: "ru" },
+  columnNames: { jp: "Japanese", tr: "Romaji", en: "English", ru: "Русский" },
   trMirror: true,
   posLabels: {
     n: "noun", npr: "proper noun", v: "verb", adj: "i-adj", adjna: "na-adj",
@@ -636,9 +660,9 @@ const DATA = [
 
   /* no.28 — そこには「希望」しかないよね？ */
   { type: "line", src: "そこには「希望」しかないよね？", units: [
-    { name: "there",        pos: "pron", jp: "そこには",     tr: "soko ni wa",      en: "There's",                     ru: "Там" },
-    { name: "hope",         pos: "n",    jp: "「希望」しか", tr: "\"kibou\" shika", en: "nothing inside but “hope”,",  ru: "нет ничего, кроме «надежды»," },
-    { name: "nothing_else", pos: "v",    jp: "ないよね？",   tr: "nai yo ne?",      en: "right?",                      ru: "ведь правда?" }
+    { name: "there",        pos: "pron", topic: true, jp: "そこには",   tr: "soko ni wa",      en: "There's",                    ru: "Там" },
+    { name: "hope",         pos: "n",                 jp: "「希望」しか", tr: "\"kibou\" shika", en: "nothing inside but “hope”,", ru: "нет ничего, кроме «надежды»," },
+    { name: "nothing_else", pos: "v",                 jp: "ないよね？",  tr: "nai yo ne?",      en: "right?",                     ru: "ведь правда?" }
   ] },
 
   /* no.29 — (ふみだそう Start up！) */
@@ -871,17 +895,19 @@ const DATA = [
 
   /* ---------- rendering ---------- */
   function makeSpan(u, lang) {
-    var s = el("span", "unit pos-" + (u.pos || "part"), u[lang]);
+    var s = el("span", "unit pos-" + (u.pos || "part") + (u.topic ? " topic" : ""), u[lang]);
     s.setAttribute("data-name", u.name);
     s.setAttribute("data-pos", u.pos || "part");
     return s;
   }
 
   function fillCell(cell, block, lang) {
+    var text = el("div", "ctext");
     orderFor(block, lang).forEach(function (u) {
-      cell.appendChild(makeSpan(u, lang));
-      cell.appendChild(document.createTextNode(" "));
+      text.appendChild(makeSpan(u, lang));
+      text.appendChild(document.createTextNode(" "));
     });
+    cell.appendChild(text);
   }
 
   function renderLineRow(container, block, num, odd) {
@@ -922,9 +948,10 @@ const DATA = [
     COLS.forEach(function (lang) {
       var h = el("div", "hcell lang-" + lang, (META.columnTitles || {})[lang] || lang);
       h.setAttribute("data-lang", lang);
-      if (lang === TR && META.trMirror !== false) {
-        h.appendChild(el("span", "mirror", "  (mirrors " + SRC + ")"));
-      }
+      var notes = [];
+      if ((META.columnNames || {})[lang]) notes.push(META.columnNames[lang]);
+      if (lang === TR && META.trMirror !== false) notes.push("mirrors " + SRC + " word order");
+      if (notes.length) h.title = notes.join(" · ");
       head.appendChild(h);
     });
     box.appendChild(head);

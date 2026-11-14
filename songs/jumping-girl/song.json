@@ -4,10 +4,10 @@
 	"sourceLanguage": "ja",
 	"sourceFormat": "three-block text",
 	"columns": [
-		"ru",
-		"en",
 		"jp",
-		"tr"
+		"tr",
+		"en",
+		"ru"
 	],
 	"source": "sources/source.ja.txt",
 	"transliteration": "sources/source.tr.txt",

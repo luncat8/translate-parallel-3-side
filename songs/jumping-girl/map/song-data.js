@@ -5,8 +5,9 @@
    Fixation: Japanese lyrics, 53 lines, stanza structure preserved
    (the validator rebuilds every src line character-for-character).
 
-   Columns: ru / en / jp / tr — tr mirrors jp structurally because
-   both render the same units[] array (jp word order).
+   Columns: jp / tr / en / ru — the source first, its romaji mirror next,
+   then the translations; tr mirrors jp structurally because both render
+   the same units[] array (jp word order).
 
    Policies (AGENTS.md §6–§9), frozen for this project:
    - unit = smallest independently translatable meaning; inflected
@@ -38,8 +39,9 @@ const META = {
   title: "Jumping girl — LinguaMap",
   subtitle: "Jumpin' girls! · parallel word map: 日本語 · Romaji · English · Русский",
   credit: "Mapped with the LinguaMap workflow (AGENTS.md): one meaning = one name across all columns · colour = part of speech (based on the Japanese) · romaji mirrors the Japanese word order · English chant refrains stay verbatim. Refrain/duplicate warnings in the Validation panel are intentional (call & response echoes, particles folded per line function).",
-  columns: ["ru", "en", "jp", "tr"],
-  columnTitles: { ru: "Русский", en: "English", jp: "日本語", tr: "Romaji" },
+  columns: ["jp", "tr", "en", "ru"],
+  columnTitles: { jp: "jp", tr: "tr", en: "en", ru: "ru" },
+  columnNames: { jp: "Japanese", tr: "Romaji", en: "English", ru: "Русский" },
   trMirror: true,
   posLabels: {
     n: "noun", npr: "proper noun", v: "verb", adj: "i-adj", adjna: "na-adj",
@@ -260,9 +262,9 @@ const DATA = [
 
   /* no.28 — そこには「希望」しかないよね？ */
   { type: "line", src: "そこには「希望」しかないよね？", units: [
-    { name: "there",        pos: "pron", jp: "そこには",     tr: "soko ni wa",      en: "There's",                     ru: "Там" },
-    { name: "hope",         pos: "n",    jp: "「希望」しか", tr: "\"kibou\" shika", en: "nothing inside but “hope”,",  ru: "нет ничего, кроме «надежды»," },
-    { name: "nothing_else", pos: "v",    jp: "ないよね？",   tr: "nai yo ne?",      en: "right?",                      ru: "ведь правда?" }
+    { name: "there",        pos: "pron", topic: true, jp: "そこには",   tr: "soko ni wa",      en: "There's",                    ru: "Там" },
+    { name: "hope",         pos: "n",                 jp: "「希望」しか", tr: "\"kibou\" shika", en: "nothing inside but “hope”,", ru: "нет ничего, кроме «надежды»," },
+    { name: "nothing_else", pos: "v",                 jp: "ないよね？",  tr: "nai yo ne?",      en: "right?",                     ru: "ведь правда?" }
   ] },
 
   /* no.29 — (ふみだそう Start up！) */

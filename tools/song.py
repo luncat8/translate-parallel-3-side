@@ -20,7 +20,8 @@ TEMPLATE = ENGINE / "linguamap-template.html"
 VALIDATOR = ENGINE / "run_validation.js"
 EXPORTER = ENGINE / "export_translations.js"
 
-COLUMNS = ["ru", "en", "jp", "tr"]
+COLUMNS = ["jp", "tr", "en", "ru"]
+COLUMN_NAMES = {"jp": "Japanese", "tr": "Romaji", "en": "English", "ru": "Русский"}
 TSV_OUTPUT = {
 	"japanese": "sources/source.ja.txt",
 	"romaji": "sources/source.tr.txt",
@@ -175,7 +176,8 @@ def starter_map(song_id):
 		'One unit per source line; colours and POS are placeholders until word-level segmentation. '
 		'Repeated refrains share names, so surface-variant warnings are intentional.",',
 		f'\tcolumns: {js(COLUMNS)},',
-		'\tcolumnTitles: { ru: "Русский", en: "English", jp: "日本語", tr: "Romaji" },',
+		f'\tcolumnTitles: {js({code: code for code in COLUMNS})},',
+		f'\tcolumnNames: {js(COLUMN_NAMES)},',
 		'\ttrMirror: true,',
 		'\tsourceKey: "jp",',
 		'\ttranslitKey: "tr",',
