@@ -38,6 +38,7 @@ html[data-theme="dark"]{
   --pos-interj:#f099c4; --pos-q:#e6c35f; --pos-part:#aab2bc;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);
      font:15.5px/1.6 "Segoe UI","Hiragino Kaku Gothic ProN","Hiragino Sans",
      "Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;}
@@ -55,7 +56,7 @@ header .credit{color:var(--muted);font-size:12.5px;margin:10px 0 12px}
 .controls button:hover{filter:brightness(.97)}
 .controls button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .controls label{font-size:13px;color:var(--muted);display:inline-flex;gap:5px;align-items:center;cursor:pointer}
-.controls .sep{width:1px;height:22px;background:var(--btnline)}
+#colbox{display:inline-flex;gap:10px;flex-wrap:wrap;justify-content:center}
 #stats{color:var(--muted);font-size:12.5px;margin:2px 0 8px}
 .hint{color:var(--muted);font-size:12.5px;margin:6px auto 14px;max-width:900px}
 
@@ -101,16 +102,13 @@ body.dimming #lines .unit:not(.sync){opacity:.16}
 body.dimming header .unit:not(.sync){opacity:.16}
 body.soloing #lines .unit:not(.solo){opacity:.16}
 body.soloing header .unit:not(.solo){opacity:.16}
-body.plain .unit{color:inherit!important;background:none!important;box-shadow:none!important;
-  font-weight:inherit!important;opacity:1!important;cursor:text;text-decoration:none!important}
 
 /* ---------------- plain-text panel (text fixation) ---------------- */
 #plain{margin:0 0 16px}
-#plain summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--muted)}
+#plain h2{font-weight:600;font-size:14px;color:var(--muted);margin:0}
 #plain pre{white-space:pre-wrap;background:var(--card);border:1px solid var(--line);
   border-radius:12px;padding:14px 18px;font-family:inherit;font-size:14.5px;
   line-height:1.95;margin:10px 0 0}
-#plain .ok{color:var(--pos-adj);font-size:11px;margin-left:8px}
 
 /* ---------------- main grid ---------------- */
 #lines{background:var(--card);border:1px solid var(--line);border-radius:16px;
@@ -128,6 +126,7 @@ body.plain .unit{color:inherit!important;background:none!important;box-shadow:no
 .cell.tr{color:var(--muted);font-size:13.5px}
 .hcell{padding:10px 0 9px;font-weight:600;letter-spacing:.08em;font-size:12.5px;
   color:var(--muted);border-bottom:2px solid var(--line)}
+.hide-labels #lineHeader{display:none}
 .gapcell{grid-column:1/-1;height:14px;border-bottom:none}
 .sectioncell{grid-column:1/-1;font-size:12px;font-weight:700;color:var(--muted);
   letter-spacing:.1em;text-transform:uppercase;padding:14px 0 4px;border-bottom:none}
@@ -136,7 +135,7 @@ body.plain .unit{color:inherit!important;background:none!important;box-shadow:no
 
 /* ---------------- panels (vocab / validation) ---------------- */
 .panel{margin:18px 0 26px}
-.panel summary{cursor:pointer;font-weight:600;font-size:15px}
+.panel h2{font-weight:600;font-size:15px;margin:0}
 .panel .pnote{color:var(--muted);font-size:12.5px;margin:2px 0 10px}
 #valBadge{display:inline-block;min-width:20px;text-align:center;border-radius:999px;
   padding:0 8px;font-size:12px;font-weight:700;margin-left:6px}
@@ -172,8 +171,7 @@ footer code{font-size:11px}
 @media(max-width:860px){
   #lines{display:block;padding:2px 12px 8px}
   .line{display:grid;grid-template-columns:1fr;gap:0;padding:6px 0}
-  .lineno{display:none}
-  .hcell{display:none}
+  .lineno,#lineHeader{display:none}
   .cell{border-bottom:1px dashed var(--line);padding:7px 0 6px;
     display:grid;grid-template-columns:2.2rem minmax(0,1fr);column-gap:9px;
     align-items:baseline;font-size:14px;line-height:1.95}
@@ -182,18 +180,19 @@ footer code{font-size:11px}
   .cell::before{content:attr(data-full);justify-self:stretch;text-align:center;
     font-size:9.5px;font-weight:700;color:var(--bg);background:var(--muted);
     border-radius:4px;padding:1px 0;letter-spacing:.08em}
+	.hide-labels .cell{grid-template-columns:minmax(0,1fr);column-gap:0}
+	.hide-labels .cell::before{content:none}
   .gapcell,.sectioncell{padding:8px 0 2px}
   .vrow{grid-template-columns:96px 1fr;row-gap:1px}
   .vrow .vsrc,.vrow .vtr,.vrow .vcell{grid-column:2}
 }
 @media(max-width:560px){
   .controls{gap:6px}
-  .controls label{display:none}
 }
 
 /* ---------------- print ---------------- */
 @media print{
-  .controls,#plain,.panel,footer,#stats{display:none!important}
+  .controls,footer,#stats,.legend,.hint{display:none!important}
   body{background:#fff;color:#000;font-size:11px}
   #lines{box-shadow:none;border:none;grid-template-columns:2.4rem repeat(var(--cols,4),minmax(0,1fr))!important}
   .cell{border-bottom:1px solid #ddd;padding:5px 0}
@@ -203,47 +202,50 @@ footer code{font-size:11px}
 
 </style>
 </head>
-<body>
+<body class="hide-labels">
 
 <header class="wrap">
-  <h1 id="appTitle"></h1>
-  <p class="subtitle" id="appSub"></p>
-  <p class="credit" id="appCredit"></p>
+	<h1 id="appTitle"></h1>
+	<p class="subtitle" id="appSub"></p>
+	<p class="credit" id="appCredit"></p>
 
-  <div class="controls">
-    <span id="colbox"></span>
-    <span class="sep"></span>
-    <button id="btnPlain" type="button">Plain text</button>
-    <button id="btnVocab" type="button">Vocabulary</button>
-    <button id="btnVal" type="button">Validation&nbsp;<span id="valBadge" class="ok">OK</span></button>
-    <button id="btnTheme" type="button">Dark</button>
-  </div>
+	<div class="controls" role="group" aria-label="Display settings">
+		<span id="colbox" role="group" aria-label="Visible languages"></span>
+		<label><input id="hideLabels" type="checkbox" checked>Hide language labels</label>
+		<button id="btnTheme" type="button" aria-pressed="false">Dark</button>
+	</div>
+	<div class="controls" role="group" aria-label="Page view">
+		<button id="btnPlain" type="button" aria-controls="plain" aria-pressed="false">Plain text</button>
+		<button id="btnTranslated" type="button" class="on" aria-controls="lines" aria-pressed="true">Translated song</button>
+		<button id="btnVocab" type="button" aria-controls="vocabPanel" aria-pressed="false">Vocabulary</button>
+		<button id="btnVal" type="button" aria-controls="valPanel" aria-pressed="false">Validation&nbsp;<span id="valBadge" class="ok">OK</span></button>
+	</div>
 
-  <div class="legend" id="legend"></div>
-  <p class="hint">Hover or tap any word: the same meaning lights up in every column. Click to pin, Esc to release. Click a legend chip to focus one part of speech; use the checkboxes to show or hide languages. An underlined word is the sentence topic (the unit carrying は) — several units can share one colour, so the underline is what singles out the topic.</p>
-  <p id="stats"></p>
-
-  <details id="plain">
-    <summary>Step 1 — Text fixation: source text reconstructed from the mapped data</summary>
-    <pre id="plainPre"></pre>
-  </details>
+	<div class="legend" id="legend"></div>
+	<p class="hint" id="songHint">Hover or tap any word: the same meaning lights up in every column. Click to pin, Esc to release. Click a legend chip to focus one part of speech; use the checkboxes to show or hide languages. An underlined word is the sentence topic (the unit carrying は) — several units can share one colour, so the underline is what singles out the topic.</p>
+	<p id="stats"></p>
 </header>
 
 <main class="wrap">
-  <div id="lines"></div>
+	<section id="plain" aria-labelledby="plainTitle" hidden>
+		<h2 id="plainTitle">Step 1 — Text fixation: source text reconstructed from the mapped data</h2>
+		<pre id="plainPre"></pre>
+	</section>
 
-  <details id="vocabPanel" class="panel">
-    <summary>Vocabulary index — every <code>name</code>, grouped by part of speech</summary>
-    <p class="pnote">Auto-generated from the data table: every column per meaning, with occurrence counts. Click a row to pin it in the text.</p>
-    <input id="vsearch" type="text" placeholder="Filter… (meaning, romaji, translation)">
-    <div id="vlist"></div>
-  </details>
+	<div id="lines" role="region" aria-labelledby="btnTranslated"></div>
 
-  <details id="valPanel" class="panel">
-    <summary>Validation — data invariants</summary>
-    <p class="pnote">Checks: the source column reconstructs the fixation text character-for-character · the transliteration column mirrors it structurally · target order arrays are exact permutations · one POS per name · every column filled · every topic mark sits on a は cell.</p>
-    <div id="valList"></div>
-  </details>
+	<section id="vocabPanel" class="panel" aria-labelledby="vocabTitle" hidden>
+		<h2 id="vocabTitle">Vocabulary index — every <code>name</code>, grouped by part of speech</h2>
+		<p class="pnote">Auto-generated from the data table: every column per meaning, with occurrence counts. Click a row to pin its meaning, then select Translated song to see it in the text.</p>
+		<input id="vsearch" type="search" aria-label="Filter vocabulary" placeholder="Filter… (meaning, romaji, translation)">
+		<div id="vlist"></div>
+	</section>
+
+	<section id="valPanel" class="panel" aria-labelledby="valTitle" hidden>
+		<h2 id="valTitle">Validation — data invariants</h2>
+		<p class="pnote">Checks: the source column reconstructs the fixation text character-for-character · the transliteration column mirrors it structurally · target order arrays are exact permutations · one POS per name · every column filled · every topic mark sits on a は cell.</p>
+		<div id="valList"></div>
+	</section>
 </main>
 
 <footer class="wrap">
@@ -1102,7 +1104,7 @@ const DATA = [
    ============================================================ */
 (function () {
   "use strict";
-  var $ = function (s, r) { return (r || document).querySelector(s); };
+	const $ = id => document.getElementById(id);
   var el = function (tag, cls, txt) {
     var n = document.createElement(tag);
     if (cls) n.className = cls;
@@ -1113,8 +1115,95 @@ const DATA = [
   var COLS = META.columns;
   var SRC = META.sourceKey || "jp";
   var TR = META.translitKey || "tr";
-  var state = { pinned: null, solo: null, cols: {}, plain: false };
-  COLS.forEach(function (c) { state.cols[c] = true; });
+	const VIEWS = {
+		plain: { button: "btnPlain", panel: "plain" },
+		translated: { button: "btnTranslated", panel: "lines" },
+		vocabulary: { button: "btnVocab", panel: "vocabPanel" },
+		validation: { button: "btnVal", panel: "valPanel" }
+	};
+	const state = {
+		pinned: null, solo: null, cols: {}, view: "translated",
+		hideLabels: true, theme: "light", query: ""
+	};
+
+	/* URL fragments also work for standalone file:// pages. */
+	function readSettings() {
+		const params = new URLSearchParams(window.location.hash.slice(1));
+		const view = params.get("view");
+		state.view = Object.hasOwn(VIEWS, view) ? view : "translated";
+		state.hideLabels = params.get("labels") !== "show";
+		state.theme = params.get("theme") === "dark" ? "dark" : "light";
+		state.query = params.get("q") || "";
+		const pos = params.get("pos");
+		state.solo = Object.hasOwn(META.posLabels || {}, pos) ? pos : null;
+
+		const requested = params.get("cols");
+		const selected = requested === null ? COLS : requested.split(",").filter(lang => COLS.includes(lang));
+		const visible = selected.length || requested === "" ? selected : COLS;
+		COLS.forEach(lang => { state.cols[lang] = visible.includes(lang); });
+	}
+
+	function saveSettings() {
+		const url = new URL(window.location.href);
+		const params = new URLSearchParams(url.hash.slice(1));
+		const visible = COLS.filter(lang => state.cols[lang]);
+		const values = {
+			view: state.view === "translated" ? null : state.view,
+			labels: state.hideLabels ? null : "show",
+			theme: state.theme === "light" ? null : state.theme,
+			cols: visible.length === COLS.length ? null : visible.join(","),
+			q: state.query || null,
+			pos: state.solo
+		};
+		Object.entries(values).forEach(([key, value]) => {
+			if (value === null) params.delete(key);
+			else params.set(key, value);
+		});
+		url.hash = params.toString();
+		if (url.href !== window.location.href) window.history.replaceState(null, "", url);
+	}
+
+	function applyView() {
+		Object.entries(VIEWS).forEach(([name, view]) => {
+			const active = state.view === name;
+			$(view.panel).hidden = !active;
+			$(view.button).classList.toggle("on", active);
+			$(view.button).setAttribute("aria-pressed", String(active));
+		});
+		$("legend").hidden = state.view !== "translated";
+		$("songHint").hidden = state.view !== "translated";
+		if (!state.pinned) clearHighlight();
+	}
+
+	function applyLabels() {
+		$("hideLabels").checked = state.hideLabels;
+		document.body.classList.toggle("hide-labels", state.hideLabels);
+	}
+
+	function applyTheme() {
+		const dark = state.theme === "dark";
+		document.documentElement.setAttribute("data-theme", state.theme);
+		$("btnTheme").classList.toggle("on", dark);
+		$("btnTheme").setAttribute("aria-pressed", String(dark));
+	}
+
+	function applyVocabFilter() {
+		const query = state.query.toLowerCase();
+		$("vsearch").value = state.query;
+		document.querySelectorAll("#vlist .vrow").forEach(row => {
+			row.hidden = !row.textContent.toLowerCase().includes(query);
+		});
+	}
+
+	function restoreSettings() {
+		readSettings();
+		applyView();
+		applyLabels();
+		applyTheme();
+		applyCols();
+		applySolo();
+		applyVocabFilter();
+	}
 
   /* ---------- ordering ---------- */
   function orderFor(block, lang) {
@@ -1178,10 +1267,11 @@ const DATA = [
   }
 
   function render() {
-    var box = $("#lines");
+    var box = $("lines");
     box.innerHTML = "";
     /* column header */
     var head = el("div", "line");
+		head.id = "lineHeader";
     head.appendChild(el("div", "lineno", "#"));
     COLS.forEach(function (lang) {
       var h = el("div", "hcell lang-" + lang, (META.columnTitles || {})[lang] || lang);
@@ -1262,7 +1352,7 @@ const DATA = [
     return c;
   }
   function renderLegend() {
-    var box = $("#legend");
+    var box = $("legend");
     box.innerHTML = "";
     box.appendChild(el("p", "cap",
       "Word colours = parts of speech (based on the source language) - same class, same colour family. Click a chip to focus that class."));
@@ -1279,53 +1369,54 @@ const DATA = [
       });
     });
   }
-  function solo(code) {
-    if (state.solo === code) {
-      state.solo = null;
-      document.body.classList.remove("soloing");
-      units().forEach(function (s) { s.classList.remove("solo"); });
-      document.querySelectorAll(".chip").forEach(function (c) { c.classList.remove("active"); });
-      return;
-    }
-    state.solo = code;
-    document.body.classList.add("soloing");
-    units().forEach(function (s) {
-      s.classList.toggle("solo", s.getAttribute("data-pos") === code);
-    });
-    document.querySelectorAll(".chip").forEach(function (c) {
-      c.classList.toggle("active", c.getAttribute("data-pos") === code);
-    });
-  }
+	function solo(code) {
+		state.solo = state.solo === code ? null : code;
+		applySolo();
+		saveSettings();
+	}
+	function applySolo() {
+		document.body.classList.toggle("soloing", state.solo !== null);
+		units().forEach(unit => {
+			unit.classList.toggle("solo", unit.getAttribute("data-pos") === state.solo);
+		});
+		document.querySelectorAll("#legend .chip").forEach(chip => {
+			chip.classList.toggle("active", chip.getAttribute("data-pos") === state.solo);
+		});
+	}
 
-  /* ---------- column toggles ---------- */
-  function renderColBox() {
-    var box = $("#colbox");
-    COLS.forEach(function (lang) {
-      var lab = el("label");
-      var cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = true;
-      cb.addEventListener("change", function () {
-        state.cols[lang] = cb.checked;
-        applyCols();
-      });
-      lab.appendChild(cb);
-      lab.appendChild(document.createTextNode((META.columnTitles || {})[lang] || lang));
-      box.appendChild(lab);
-    });
-  }
-  function applyCols() {
-    var n = COLS.filter(function (l) { return state.cols[l]; }).length;
-    document.documentElement.style.setProperty("--cols", Math.max(n, 1));
-    document.querySelectorAll("#lines [data-lang]").forEach(function (c) {
-      var lang = c.getAttribute("data-lang");
-      if (lang) c.style.display = state.cols[lang] ? "" : "none";
-    });
-  }
+	/* ---------- column toggles ---------- */
+	function renderColBox() {
+		const box = $("colbox");
+		COLS.forEach(lang => {
+			const label = el("label");
+			label.title = (META.columnNames || {})[lang] || lang;
+			const checkbox = document.createElement("input");
+			checkbox.type = "checkbox";
+			checkbox.value = lang;
+			checkbox.addEventListener("change", () => {
+				state.cols[lang] = checkbox.checked;
+				applyCols();
+				saveSettings();
+			});
+			label.appendChild(checkbox);
+			label.appendChild(document.createTextNode((META.columnTitles || {})[lang] || lang));
+			box.appendChild(label);
+		});
+	}
+	function applyCols() {
+		const count = COLS.filter(lang => state.cols[lang]).length;
+		document.documentElement.style.setProperty("--cols", Math.max(count, 1));
+		document.querySelectorAll("#colbox input").forEach(checkbox => {
+			checkbox.checked = state.cols[checkbox.value];
+		});
+		document.querySelectorAll("#lines [data-lang], #vlist [data-lang]").forEach(cell => {
+			cell.hidden = !state.cols[cell.getAttribute("data-lang")];
+		});
+	}
 
   /* ---------- plain-text (fixation) panel ---------- */
   function renderPlain() {
-    var pre = $("#plainPre");
+    var pre = $("plainPre");
     var out = [];
     var n = 0;
     DATA.forEach(function (b) {
@@ -1342,7 +1433,7 @@ const DATA = [
 
   /* ---------- vocabulary index ---------- */
   function renderVocab() {
-    var list = $("#vlist");
+    var list = $("vlist");
     list.innerHTML = "";
     var seen = {}, order = [];
     DATA.forEach(function (b) {
@@ -1373,13 +1464,16 @@ const DATA = [
       var chip = el("span", "chip pos-" + u.pos, (META.posLabels || {})[u.pos] || u.pos);
       row.appendChild(chip);
       row.appendChild(el("span", "nm", name));
-      row.appendChild(el("span", "vsrc", u[SRC] || ""));
-      COLS.forEach(function (lang) {
-        if (lang === SRC) return;
-        row.appendChild(el("span", "vcell v" + lang, u[lang] || ""));
-      });
+			COLS.forEach(lang => {
+				const cell = el("span", lang === SRC ? "vsrc" : "vcell v" + lang, u[lang] || "");
+				cell.setAttribute("data-lang", lang);
+				row.appendChild(cell);
+			});
       row.appendChild(el("span", "vct", "x" + e.count));
-      row.addEventListener("click", function () { pin(name); });
+			row.addEventListener("click", event => {
+				event.stopPropagation();
+				pin(name);
+			});
       list.appendChild(row);
     });
   }
@@ -1387,10 +1481,10 @@ const DATA = [
   /* ---------- validation panel ---------- */
   function renderValidation() {
     var res = validateData(META, DATA);
-    var badge = $("#valBadge");
+    var badge = $("valBadge");
     badge.textContent = res.errors ? String(res.errors + res.warnings) : "OK";
     badge.className = res.errors ? "bad" : "ok";
-    var list = $("#valList");
+    var list = $("valList");
     list.innerHTML = "";
     var okLine = el("div", "valitem ok",
       res.stats.lines + " lines | " + res.stats.uniqueNames + " unique meanings | " +
@@ -1412,9 +1506,9 @@ const DATA = [
   /* ---------- boot ---------- */
   document.addEventListener("DOMContentLoaded", function () {
     document.documentElement.style.setProperty("--cols", COLS.length);
-    $("#appTitle").textContent = META.title || "";
-    $("#appSub").textContent = META.subtitle || "";
-    $("#appCredit").textContent = META.credit || "";
+    $("appTitle").textContent = META.title || "";
+    $("appSub").textContent = META.subtitle || "";
+    $("appCredit").textContent = META.credit || "";
 
     render();
     renderLegend();
@@ -1422,58 +1516,48 @@ const DATA = [
     renderPlain();
     renderVocab();
     var res = renderValidation();
-    $("#stats").textContent =
+    $("stats").textContent =
       res.stats.lines + " lines | " + res.stats.uniqueNames + " unique meanings | " +
       res.stats.spans + " mapped spans | columns: " + COLS.join(" / ");
     if (res.errors) console.warn("[LinguaMap] validation errors:", res.issues);
 
     document.querySelectorAll(".unit").forEach(wireUnit);
 
-    document.addEventListener("click", function () {
-      if (state.pinned) { state.pinned = null; clearHighlight(); }
-    });
+		document.addEventListener("click", event => {
+			if (event.target.closest(".controls") || !state.pinned) return;
+			state.pinned = null;
+			clearHighlight();
+		});
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && state.pinned) { state.pinned = null; clearHighlight(); }
     });
 
-    $("#btnTheme").addEventListener("click", function () {
-      var html = document.documentElement;
-      var dark = html.getAttribute("data-theme") === "dark";
-      html.setAttribute("data-theme", dark ? "light" : "dark");
-      $("#btnTheme").classList.toggle("on", !dark);
-      try { localStorage.setItem("linguamap-theme", dark ? "light" : "dark"); } catch (e) {}
-    });
-    try {
-      if (localStorage.getItem("linguamap-theme") === "dark") {
-        document.documentElement.setAttribute("data-theme", "dark");
-        $("#btnTheme").classList.add("on");
-      }
-    } catch (e) {}
+		$("btnTheme").addEventListener("click", () => {
+			state.theme = state.theme === "dark" ? "light" : "dark";
+			applyTheme();
+			saveSettings();
+		});
+		$("hideLabels").addEventListener("change", event => {
+			state.hideLabels = event.target.checked;
+			applyLabels();
+			saveSettings();
+		});
+		Object.entries(VIEWS).forEach(([name, view]) => {
+			$(view.button).addEventListener("click", () => {
+				state.view = name;
+				applyView();
+				saveSettings();
+			});
+		});
+		$("vsearch").addEventListener("input", event => {
+			state.query = event.target.value;
+			applyVocabFilter();
+			saveSettings();
+		});
 
-    $("#btnPlain").addEventListener("click", function () {
-      state.plain = !state.plain;
-      $("#plain").open = state.plain;
-      document.body.classList.toggle("plain", state.plain);
-      $("#btnPlain").classList.toggle("on", state.plain);
-    });
-    $("#btnVocab").addEventListener("click", function () {
-      var p = $("#vocabPanel");
-      p.open = !p.open;
-      $("#btnVocab").classList.toggle("on", p.open);
-    });
-    $("#btnVal").addEventListener("click", function () {
-      var p = $("#valPanel");
-      p.open = !p.open;
-      $("#btnVal").classList.toggle("on", p.open);
-    });
-    $("#vsearch").addEventListener("input", function (e) {
-      var q = e.target.value.toLowerCase();
-      document.querySelectorAll("#vlist .vrow").forEach(function (r) {
-        r.style.display = r.textContent.toLowerCase().indexOf(q) > -1 ? "" : "none";
-      });
-    });
-
-    applyCols();
+		window.addEventListener("hashchange", restoreSettings);
+		window.addEventListener("popstate", restoreSettings);
+		restoreSettings();
   });
 })();
 

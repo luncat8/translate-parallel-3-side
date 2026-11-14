@@ -78,6 +78,19 @@
   difficult to have only that" / "because If all of humanity was happy,") are
   kept verbatim from the placement, including the stray capital in `If`.
 
+## Page controls — 2026-11-14
+
+- Rebuilt from the shared engine with exclusive Plain text / Translated song /
+  Vocabulary / Validation views; Translated song is the default.
+- Language labels are hidden by default with an accessible checkbox to show
+  them; mobile text uses the freed gutter space.
+- View, columns, labels, theme, vocabulary filter and POS focus round-trip in
+  the URL fragment, including offline pages. Language toggles also apply to
+  vocabulary; pins survive switching back to the translated song.
+- Validation: `make check` passes (5 regression tests, 0 data errors; the 43
+  audited warnings are unchanged). All 18 browser tests pass over both
+  `file://` and HTTP, including mobile labels and selected-view printing.
+
 ## Next step
 
 - Russian review of the chorus register (`все` vs `всё`, `нравятся` aspect) and,
